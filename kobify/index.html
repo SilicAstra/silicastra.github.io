@@ -357,6 +357,8 @@ function unlockMusic(event){
   if(musicAutoArmed&&!musicToggle.contains(event.target))startMusic();
 }
 document.addEventListener('pointerdown',unlockMusic);
+// Touch browsers grant activation on click/touch release, not pointerdown.
+document.addEventListener('click',unlockMusic);
 document.addEventListener('keydown',unlockMusic);
 music.addEventListener('playing',()=>{musicAutoArmed=false;musicWanted=true;showMusic(true);});
 music.addEventListener('pause',()=>showMusic(false));
