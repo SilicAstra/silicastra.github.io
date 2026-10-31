@@ -1,0 +1,10 @@
+{
+  "name": "kobify-feedback",
+  "account_id": "e9cf0144a0f1fa96e32be399d0a69dc1",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-10-31",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": {"enabled":true},
+  "d1_databases": [{"binding":"DB","database_name":"kobify-feedback","database_id":"dc433039-5dd9-456d-b16d-c2519f73bb54"}]
+}
