@@ -12,7 +12,7 @@ function crc32(data){let crc=-1;for(const byte of data){crc^=byte;for(let k=0;k<
 function chunk(type,data){const name=Buffer.from(type),body=Buffer.concat([name,data]),length=Buffer.alloc(4),crc=Buffer.alloc(4);length.writeUInt32BE(data.length);crc.writeUInt32BE(crc32(body));return Buffer.concat([length,body,crc]);}
 function png(pixels,n){const head=Buffer.alloc(13);head.writeUInt32BE(n);head.writeUInt32BE(n,4);head[8]=8;head[9]=6;const rows=Buffer.alloc(n*(n*4+1));for(let y=0;y<n;y++)Buffer.from(pixels.buffer,pixels.byteOffset+y*n*4,n*4).copy(rows,y*(n*4+1)+1);return new Uint8Array(Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),chunk('IHDR',head),chunk('IDAT',deflateSync(rows)),chunk('IEND',Buffer.alloc(0))]));}
 
-for(const n of [32,48,64,96,128]){
+for(const n of [32,48,64,96,128,192,256]){
  const source=Uint8ClampedArray.from({length:n*n*4},(_,i)=>i%4===3?255:(i*57)%256),map=Array.from({length:n*n},(_,i)=>n*n-1-i),result=ctx.bundle.permutePixels(source,map),image=png(result,n);
  const key={format:'kobify-pixel-key',version:1,size:n,destinationToSource:map,resultSha256:await ctx.bundle.pixelDigest(result),originalSha256:await ctx.bundle.pixelDigest(source)};
  const packed=ctx.bundle.createRecoveryPng(key,image),read=ctx.bundle.readRecoveryPng(packed);

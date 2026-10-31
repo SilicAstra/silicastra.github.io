@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><title>KOBIFY WebGL ID test</title><style>body{background:#182213;color:#e8f3d6;font:16px system-ui;padding:32px}button{padding:12px;background:#dfff85}canvas{display:block;width:384px;max-width:100%;margin-top:20px}pre{white-space:pre-wrap}</style><h1>WebGL 24-bit particle ID test</h1><button id="run">Run 65,536 particle test</button><pre id="status">Ready</pre><canvas id="canvas"></canvas><script>
+document.getElementById('run').onclick=async()=>{const status=document.getElementById('status');try{
+ const html=await(await fetch('./index.html')).text(),doc=new DOMParser().parseFromString(html,'text/html');
+ const Renderer=new Function(doc.getElementById('renderer-source').textContent+';return PixelRenderer;')();
+ const renderer=new Renderer(document.getElementById('canvas')),gl=renderer.gl;if(!gl)throw Error('WebGL2 unavailable');
+ const n=256,count=n*n,positions=new Float32Array(count*2),source=new Uint8ClampedArray(count*4),map=Uint32Array.from({length:count},(_,i)=>i);
+ for(let i=0;i<count;i++){positions[i*2]=i%n+.5;positions[i*2+1]=Math.floor(i/n)+.5;source.set([i&255,(i>>8)&255,(i>>16)&255,255],i*4);}
+ renderer.setup(n,source,source,map);renderer.draw(positions);
+ // Run the actual seed shader and verify every ID, including empty texels.
+ gl.bindFramebuffer(gl.FRAMEBUFFER,renderer.fbo[0]);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.useProgram(renderer.seedProgram);renderer.bind(renderer.seedProgram,'uPositions',renderer.posTex,0);renderer.integer(renderer.seedProgram,'uGrid',n);gl.drawArrays(gl.POINTS,0,count);
+ const rgba=new Uint8Array(384*384*4);gl.readPixels(0,0,384,384,gl.RGBA,gl.UNSIGNED_BYTE,rgba);const seen=new Set();let empty=0,last=false;
+ for(let i=0;i<rgba.length;i+=4){const v=rgba[i]+256*rgba[i+1]+65536*rgba[i+2];if(!v){empty++;continue;}if(v>count)throw Error('ID out of range');seen.add(v-1);if(v===65536)last=rgba[i]===0&&rgba[i+1]===0&&rgba[i+2]===1;}
+ if(seen.size!==count||!empty||!last)throw Error('Lost particle or empty marker: '+seen.size);
+ // Exercise JFA decode and shade decode, and compare all 65,536 color samples.
+ renderer.draw(positions);gl.readPixels(0,0,384,384,gl.RGBA,gl.UNSIGNED_BYTE,rgba);
+ for(let i=0;i<count;i++){const x=Math.floor((i%n+.5)*384/n),y=Math.floor((1-(Math.floor(i/n)+.5)/n)*384),p=(y*384+x)*4;for(let c=0;c<4;c++)if(rgba[p+c]!==source[i*4+c])throw Error('Shade ID mismatch '+i+' channel '+c);}
+ if(gl.getError()!==gl.NO_ERROR)throw Error('WebGL error');status.textContent='PASS: all 65,536 seed IDs preserved; index 65535 = RGB(0,0,1); RGB(0,0,0) remains empty. JFA + shade decode verified at every particle center.';
+ }catch(error){status.textContent='FAIL: '+error.message;}};
+</script>

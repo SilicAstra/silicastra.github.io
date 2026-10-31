@@ -40,7 +40,7 @@ assert.ok(sim.velocity.every(v=>v===0));
 for(const id of ['renderer-source','app-source'])new vm.Script(extract(id));
 console.log('PASS: bijection, decreasing objective, deterministic mapping, identity/solid inputs, invalid inputs, bounded simulation, exact endpoints and JS syntax.');
 vm.runInContext(extract('recovery-source')+'\nthis.recovery={permutePixels,pixelDigest,validateRecoveryKey};',ctx);
-for(const size of [32,48,64,96,128]){
+for(const size of [32,48,64,96,128,192,256]){
   const pixels=Uint8ClampedArray.from({length:size*size*4},(_,i)=>i%4===3?255:(i*73+Math.floor(i/97))%256);
   const map=Array.from({length:size*size},(_,i)=>size*size-i-1);
   const result=ctx.recovery.permutePixels(pixels,map);
@@ -56,3 +56,12 @@ for(const size of [32,48,64,96,128]){
   assert.notEqual(await ctx.recovery.pixelDigest(changed),key.resultSha256);
 }
 console.log('PASS: recovery round trips at all five sizes, JSON key validation, SHA-256 mismatch detection.');
+
+for(const size of [64,96,128,192,256]){
+ const pixels=Uint8ClampedArray.from({length:size*size*4},(_,i)=>i%4===3?255:i%251),matcher=new ctx.Matcher(pixels,pixels,size,0);
+ matcher.pass(1,1);assert.equal(matcher.map.length,size*size);assert.equal(matcher.map[size*size-1],size*size-1);assert.equal(matcher.totalCost(),0);
+ const simulation=new ctx.Sim(matcher.map,size);simulation.snap(1);assert.equal(simulation.positions[(size*size-1)*2],size-.5);
+}
+assert.throws(()=>new ctx.Matcher(new Uint8ClampedArray(257*257*4),new Uint8ClampedArray(257*257*4),257));
+assert.match(extract('app-source'),/setLevel\(2\);syncRoute/);
+console.log('PASS: matcher and simulation support 256x256 with 65536 unique indices; reject 257; default initialization selects high.');
