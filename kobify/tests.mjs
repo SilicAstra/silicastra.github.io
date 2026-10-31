@@ -1,9 +1,10 @@
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
+import {webcrypto} from 'node:crypto';
 const html=readFileSync(new URL('./index.html',import.meta.url),'utf8');
 const extract=id=>html.match(new RegExp('<script[^>]*id="'+id+'"[^>]*>([\\s\\S]*?)</script>'))[1];
-const ctx=vm.createContext({self:{postMessage(){}},console});
+const ctx=vm.createContext({self:{postMessage(){}},console,crypto:webcrypto});
 vm.runInContext(extract('matching-source')+'\nthis.Matcher=PixelMatcher;',ctx);
 vm.runInContext(extract('simulation-source')+'\nthis.Sim=PixelSimulation;',ctx);
 const n=16,count=n*n;
@@ -38,3 +39,20 @@ sim.snap(0);assert.deepEqual(Array.from(sim.positions),Array.from(sim.origins));
 assert.ok(sim.velocity.every(v=>v===0));
 for(const id of ['renderer-source','app-source'])new vm.Script(extract(id));
 console.log('PASS: bijection, decreasing objective, deterministic mapping, identity/solid inputs, invalid inputs, bounded simulation, exact endpoints and JS syntax.');
+vm.runInContext(extract('recovery-source')+'\nthis.recovery={permutePixels,pixelDigest,validateRecoveryKey};',ctx);
+for(const size of [32,48,64,96,128]){
+  const pixels=Uint8ClampedArray.from({length:size*size*4},(_,i)=>i%4===3?255:(i*73+Math.floor(i/97))%256);
+  const map=Array.from({length:size*size},(_,i)=>size*size-i-1);
+  const result=ctx.recovery.permutePixels(pixels,map);
+  const restored=ctx.recovery.permutePixels(result,map,true);
+  assert.deepEqual(Array.from(restored),Array.from(pixels));
+  const key={format:'kobify-pixel-key',version:1,size,destinationToSource:map,resultSha256:await ctx.recovery.pixelDigest(result),originalSha256:await ctx.recovery.pixelDigest(pixels)};
+  ctx.recovery.validateRecoveryKey(JSON.parse(JSON.stringify(key)));
+  assert.equal(await ctx.recovery.pixelDigest(restored),key.originalSha256);
+  assert.throws(()=>ctx.recovery.validateRecoveryKey({...key,version:2}));
+  assert.throws(()=>ctx.recovery.validateRecoveryKey({...key,destinationToSource:map.map(()=>0)}));
+  assert.throws(()=>ctx.recovery.validateRecoveryKey({...key,destinationToSource:[-1,...map.slice(1)]}));
+  const changed=new Uint8ClampedArray(result);changed[0]^=1;
+  assert.notEqual(await ctx.recovery.pixelDigest(changed),key.resultSha256);
+}
+console.log('PASS: recovery round trips at all five sizes, JSON key validation, SHA-256 mismatch detection.');

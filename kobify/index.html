@@ -48,6 +48,7 @@ body[data-view=result]{background:#131710}body[data-view=result] .backdrop,body[
 @media(max-width:700px){.brand{font-size:16px;gap:9px}.brand-icon{width:31px;height:31px;font-size:15px}.workspace h1{font-size:36px;letter-spacing:-1.5px}.result-intro{align-items:flex-start}.result-intro .eyebrow{font-size:10px;letter-spacing:0}.result-intro h1{font-size:29px;letter-spacing:-1px}.result-intro .target-badge{margin-top:8px}.edition{font-size:7px;gap:5px;letter-spacing:.5px}.page-footer{letter-spacing:0}}
 @media(max-width:360px){.workspace h1{font-size:32px}.result-intro .target-badge{display:none}}
 .music-toggle{position:fixed;z-index:10;right:24px;bottom:18px;display:flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid #dfff8540;border-radius:99px;background:#1b2419ef;box-shadow:0 5px 24px #0003;color:#dfff85;font-size:11px;backdrop-filter:blur(12px)}.music-toggle>span:first-child{font-size:18px;line-height:1}.music-toggle[aria-pressed=true]{background:#dfff85;color:#26341b}.page-footer{padding-right:145px}@media(max-width:700px){.music-toggle{right:14px;bottom:14px;padding:9px 12px;font-size:10px}.page-footer{padding-right:0;padding-bottom:55px;height:auto;min-height:110px}}
+.key-tools{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px;border-top:1px solid #ffffff18;padding-top:18px}.key-tools button,.restore-open{border:1px solid #829759;background:transparent;color:#bdd691;border-radius:6px;padding:9px 12px;font-size:11px}.key-tools p{width:100%;margin:2px 0;color:#9ba88d;font-size:11px;line-height:1.7}.control-panel>.restore-open{color:#526b30;border-color:#b6c79c;font-size:10px;padding:6px 9px}#restore-dialog{background:#1b2418;color:#e5eddc;border:1px solid #607247;border-radius:14px;width:min(480px,92vw);max-height:90svh;padding:24px}#restore-dialog::backdrop{background:#0009}#restore-dialog h2{font-size:22px;margin:4px 0 14px}#restore-dialog p{font-size:12px;line-height:1.7;color:#b7c8a3}#restore-dialog label{display:block;margin:18px 0 8px;font-size:12px}#restore-dialog input{display:block;width:100%;font-size:12px;color:#cbd9bb}#restore-dialog button{border:1px solid #829759;border-radius:6px;background:#dfff85;color:#25331a;padding:9px 12px;font-size:12px}#restore-run,#restore-download{margin-top:20px}.restore-close{float:right}#restored-preview{display:block;max-width:100%;width:256px;margin:15px auto;image-rendering:pixelated}.transport{flex-wrap:wrap}.transport input{flex:1;width:auto}@media(max-width:700px){.key-tools button{flex:1;white-space:nowrap}}
 </style></head>
 <body data-view="home">
 <div class="backdrop" aria-hidden="true">
@@ -74,6 +75,7 @@ body[data-view=result]{background:#131710}body[data-view=result] .backdrop,body[
       <div class="level-labels" aria-label="选择像素精度"><button type="button" data-level="0" class="selected" aria-pressed="true">低</button><button type="button" data-level="1" aria-pressed="false">中</button><button type="button" data-level="2" aria-pressed="false">高</button><button type="button" data-level="3" aria-pressed="false">极高</button><button type="button" data-level="4" aria-pressed="false">max<span>↗</span></button></div>
       <button id="generate" class="primary" disabled>点击复活科比 <span>↗</span></button>
       <p id="status" class="status" role="status">正在载入科比照片…</p>
+      <button class="restore-open" type="button">已有密钥？还原图片 ↗</button>
       <details class="advanced"><summary>更多设置</summary><label for="crop">画面适配</label><select id="crop"><option value="cover">居中裁剪 · 填满画面</option><option value="contain">保留全图 · 白色留边</option></select><label for="structure">保留原图结构 <output id="structure-value">15%</output></label><input id="structure" type="range" min="0" max="100" value="15"></details>
       <div class="panel-footer"><span class="tiny-dot"></span><span>档位越高，像素越细，细节越丰富</span><span class="arrow" aria-hidden="true">⟶</span></div>
     </div>
@@ -89,10 +91,12 @@ body[data-view=result]{background:#131710}body[data-view=result] .backdrop,body[
     <div class="canvas-shell"><canvas id="result" width="384" height="384" role="img" aria-label="图片像素重排动画预览"></canvas><img id="original-overlay" alt="原图对照" hidden><div id="canvas-caption">每个像素，只用一次。</div></div>
     <div class="compute-area"><progress id="compute-progress" max="1" value="0" hidden aria-label="像素重排计算进度"></progress><p id="result-status" class="status" role="status"></p><button id="cancel" class="cancel" hidden>取消计算并返回</button></div>
     <div class="transport"><button id="play" disabled aria-label="播放变形动画">▶</button><label for="timeline" class="sr-only">变形进度</label><input id="timeline" type="range" min="0" max="100" value="0" step="1" disabled><output id="time-value">0%</output><button id="compare" disabled aria-pressed="false">对照原图</button><button id="download" disabled>下载成品 PNG ↓</button></div>
+    <div class="key-tools"><button id="reverse" disabled>↶ 反向播放</button><button id="download-key" disabled>下载图像还原密钥 ↓</button><button id="download-reversible" disabled>下载可还原成品 ↓</button><button class="restore-open" type="button">使用密钥还原 ↗</button><p>密钥保存本次像素位置映射，配合“可还原成品”还原裁剪、缩放后的输入像素图。可还原成品固定使用原图颜色和最终排列；密钥不包含原图，也不是加密文件。</p></div>
     <div class="color-control"><div><label for="color-blend">目标配色</label><output id="blend-value">0%</output><span id="blend-note">保持原图颜色</span></div><input id="color-blend" type="range" min="0" max="100" value="0" disabled><p>原图颜色不足时，可提高此项，混合科比照片的颜色，让人像更清楚。</p></div>
   </section>
 </main>
 <footer class="page-footer"><span>SiliC AstrA — MAMBA MENTALITY.</span><span><a href="https://github.com/SilicAstra/silicastra.github.io/tree/main/kobify" target="_blank" rel="noopener">GitHub ↗</a> <span class="divider">/</span> <a href="https://github.com/Spu7Nix/obamify" target="_blank" rel="noopener">Obamify</a> · <a href="./LICENSE">MIT</a><span class="footer-star">✳</span></span></footer>
+<dialog id="restore-dialog"><form method="dialog"><button class="restore-close" aria-label="关闭还原窗口">✕</button></form><h2>用密钥还原图片</h2><p>选择配套的 JSON 密钥与“可还原成品”PNG。还原的是本次处理精度下的输入图，不包含裁剪掉的区域。</p><label for="restore-key">图像还原密钥（JSON）</label><input id="restore-key" type="file" accept=".json,application/json"><label for="restore-image">可还原成品（PNG）</label><input id="restore-image" type="file" accept="image/png"><button id="restore-run" type="button">验证并还原</button><p id="restore-status" role="status"></p><img id="restored-preview" hidden alt="使用像素映射还原的输入图"><button id="restore-download" type="button" hidden>下载还原图片 ↓</button></dialog>
 <audio id="background-music" src="./see-you-again.mp3" preload="metadata" autoplay loop></audio>
 <button id="music-toggle" class="music-toggle" type="button" aria-label="播放背景音乐" aria-pressed="false" title="See You Again · 点击播放或暂停"><span aria-hidden="true">♫</span><span id="music-label">开启音乐</span></button>
 <noscript>请启用 JavaScript，以使用本地像素重排功能。</noscript>
@@ -326,6 +330,31 @@ class PixelRenderer{
   }
 }
 </script>
+<script id="recovery-source">/* A key describes a permutation, not encryption. No original image data is
+ * stored in the key. SHA-256 binds it to the exact canonical RGBA pixels. */
+function validateRecoveryKey(key){
+  if(!key||key.format!=='kobify-pixel-key'||key.version!==1||![32,48,64,96,128].includes(key.size))throw new Error('不支持的密钥格式或版本');
+  const count=key.size*key.size,map=key.destinationToSource;
+  if(!Array.isArray(map)||map.length!==count)throw new Error('密钥映射长度不正确');
+  const seen=new Uint8Array(count);
+  for(const i of map){if(!Number.isInteger(i)||i<0||i>=count||seen[i])throw new Error('密钥映射不是有效的一一对应排列');seen[i]=1;}
+  for(const field of ['resultSha256','originalSha256'])if(typeof key[field]!=='string'||!/^[a-f0-9]{64}$/.test(key[field]))throw new Error('密钥校验信息不完整');
+  return key;
+}
+function permutePixels(pixels,map,inverse=false){
+  if(pixels.length!==map.length*4)throw new Error('像素数量与映射不一致');
+  const output=new Uint8ClampedArray(pixels.length);
+  for(let dst=0;dst<map.length;dst++){
+    const from=(inverse?dst:map[dst])*4,to=(inverse?map[dst]:dst)*4;
+    output.set(pixels.subarray(from,from+4),to);
+  }
+  return output;
+}
+async function pixelDigest(pixels){
+  const hash=await crypto.subtle.digest('SHA-256',pixels);
+  return Array.from(new Uint8Array(hash),b=>b.toString(16).padStart(2,'0')).join('');
+}
+</script>
 <script id="app-source">/* KOBIFY UI. Local-only file decoding, cancelable Worker calculation,
  * fixed-step simulation, JFA rendering, and lossless PNG snapshot export.
  */
@@ -375,6 +404,7 @@ const levels=[
   {label:'max',n:128,name:'曼巴精神'}
 ];
 let selectedLevel=0;
+let playDirection=1;
 let sourceObjectURL=null,currentSourceName='',computeStart=0;
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const sampleCanvas=document.createElement('canvas'),sampleCtx=sampleCanvas.getContext('2d',{willReadFrequently:true});
@@ -411,7 +441,7 @@ function sample(image,n,mode='cover'){
 }
 function pixelsToURL(pixels,n){const c=document.createElement('canvas');c.width=c.height=n;c.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(pixels),n,n),0,0);return c.toDataURL('image/png');}
 function loadImage(src){return new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>reject(new Error('图片无法解码'));image.src=src;});}
-function stopAnimation(){if(raf)cancelAnimationFrame(raf);raf=0;playing=false;lastTime=0;accumulator=0;$('play').textContent='▶';$('play').setAttribute('aria-label','播放变形动画');}
+function stopAnimation(){if(raf)cancelAnimationFrame(raf);raf=0;playing=false;lastTime=0;accumulator=0;$('play').textContent='▶';$('play').setAttribute('aria-label','播放变形动画');$('reverse').textContent='↶ 反向播放';}
 function cancelCompute(announce=false){jobGeneration++;if(worker){worker.terminate();worker=null;}toggleBusy(false);if(announce)status('已取消计算，可调整设置后重新开始。');}
 function toggleBusy(busy){
   $('generate').disabled=busy||!sourceImage||!targetImage||!renderer;
@@ -420,7 +450,7 @@ function toggleBusy(busy){
   for(const id of ['strength','structure','crop'])$(id).disabled=busy;
   document.querySelectorAll('[data-level]').forEach(el=>el.disabled=busy);
 }
-function setPlaybackEnabled(enabled){for(const id of ['play','timeline','compare','download','color-blend'])$(id).disabled=!enabled;}
+function setPlaybackEnabled(enabled){for(const id of ['play','reverse','download-key','download-reversible','timeline','compare','download','color-blend'])$(id).disabled=!enabled;}
 function hideOriginal(){ $('original-overlay').hidden=true;$('compare').setAttribute('aria-pressed','false');}
 function draw(){if(simulation)renderer.draw(simulation.positions,(+$('color-blend').value/100)*progress);}
 function updateTimeline(){const value=Math.round(progress*100);$('timeline').value=value;$('time-value').textContent=value+'%';}
@@ -500,7 +530,7 @@ function generate(){
 function frame(now){
   raf=0;if(document.hidden){lastTime=0;return;}
   const elapsed=lastTime?Math.min((now-lastTime)/1000,.06):1/60;lastTime=now;
-  if(playing){progress=Math.min(1,progress+elapsed/7);updateTimeline();if(progress===1){playing=false;$('play').textContent='↻';$('play').setAttribute('aria-label','重新播放变形动画');}}
+  if(playing){progress=Math.max(0,Math.min(1,progress+playDirection*elapsed/7));updateTimeline();if(progress===1&&playDirection===1||progress===0&&playDirection===-1){playing=false;$('play').textContent='▶';$('reverse').textContent='↶ 反向播放';$('play').setAttribute('aria-label','播放变形动画');}}
   accumulator=Math.min(accumulator+elapsed,.08);let error=Infinity;
   while(accumulator>=1/60){error=simulation.step(progress);accumulator-=1/60;}
   draw();settle++;
@@ -509,11 +539,13 @@ function frame(now){
   if(playing)settle=0;
 }
 function wake(){if(!raf){lastTime=0;raf=requestAnimationFrame(frame);}}
-function play(){
+function play(direction=1){
   if(!ready)return;hideOriginal();
-  if(playing){stopAnimation();$('view-state').textContent='动画已暂停';return;}
-  if(progress>=1){progress=0;simulation.snap(0);updateTimeline();}
-  playing=true;settle=0;$('play').textContent='Ⅱ';$('play').setAttribute('aria-label','暂停变形动画');$('view-state').textContent='像素流动中';wake();
+  if(playing&&playDirection===direction){stopAnimation();$('view-state').textContent='动画已暂停';return;}
+  stopAnimation();playDirection=direction;
+  if(direction===1&&progress>=1||direction===-1&&progress<=0){progress=direction===1?0:1;simulation.snap(progress);updateTimeline();}
+  if(reducedMotion){progress=direction===1?1:0;simulation.snap(progress);updateTimeline();draw();$('view-state').textContent=direction===1?'重排完成':'输入图片';return;}
+  playing=true;settle=0;$('play').textContent=direction===1?'Ⅱ':'▶';$('play').setAttribute('aria-label',direction===1?'暂停变形动画':'播放变形动画');$('reverse').textContent=direction===-1?'Ⅱ 暂停反向播放':'↶ 反向播放';$('view-state').textContent=direction===-1?'像素反向还原中':'像素流动中';wake();
 }
 $('upload').addEventListener('click',()=>$('file-input').click());
 $('file-input').addEventListener('change',()=>{acceptFile($('file-input').files[0]);$('file-input').value='';});
@@ -528,7 +560,8 @@ $('strength').addEventListener('input',() => setLevel($('strength').value));
 document.querySelectorAll('[data-level]').forEach(el=>el.addEventListener('click',()=>setLevel(el.dataset.level)));
 $('back-home').addEventListener('click',goHome);window.addEventListener('hashchange',syncRoute);
 $('structure').addEventListener('input',()=>{$('structure-value').textContent=$('structure').value+'%';});$('structure').addEventListener('change',invalidate);
-$('play').addEventListener('click',play);
+$('play').addEventListener('click',()=>play(1));
+$('reverse').addEventListener('click',()=>play(-1));
 $('timeline').addEventListener('input',()=>{if(!ready)return;stopAnimation();hideOriginal();progress=+$('timeline').value/100;settle=0;updateTimeline();if(reducedMotion){simulation.snap(progress);draw();}else wake();});
 $('color-blend').addEventListener('input',()=>{$('blend-value').textContent=$('color-blend').value+'%';$('blend-note').textContent=+$('color-blend').value?'混合目标颜色':'保持原图颜色';draw();});
 $('compare').addEventListener('click',()=>{const on=$('original-overlay').hidden;$('original-overlay').hidden=!on;$('compare').setAttribute('aria-pressed',String(on));});
@@ -537,6 +570,50 @@ $('download').addEventListener('click',()=>{
   const download=(blob)=>{if(!blob){status('导出失败，请重试。',true);return;}const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='kobify-'+Math.round(progress*100)+'.png';link.click();setTimeout(()=>URL.revokeObjectURL(url),5000);};
   try{draw();$('result').toBlob(download,'image/png');}catch{status('无法导出画布，请刷新后重试。',true);}
 });
+function saveBlob(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),5000);}
+function pixelCanvas(pixels,n){const canvas=document.createElement('canvas');canvas.width=canvas.height=n;canvas.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(pixels),n,n),0,0);return canvas;}
+async function recoveryExport(keyOnly){
+  if(!ready)return;
+  // Snapshot the current job before async hashing; another upload cannot
+  // change the mapping paired with this download.
+  const n=currentN,map=Array.from(mapping),pixels=new Uint8ClampedArray(sourcePixels);
+  const result=permutePixels(pixels,map);
+  try{
+    const resultSha256=await pixelDigest(result),originalSha256=await pixelDigest(pixels);
+    const name='kobify-'+resultSha256.slice(0,12);
+    if(keyOnly){
+      const key={format:'kobify-pixel-key',version:1,size:n,order:'row-major, top-left origin',destinationToSource:map,resultSha256,originalSha256,scope:'Cropped/resampled input pixels; not the full-resolution upload',imageFile:name+'-reversible.png'};
+      saveBlob(new Blob([JSON.stringify(key)],{type:'application/json'}),name+'-key.json');
+    }else pixelCanvas(result,n).toBlob(blob=>{if(blob)saveBlob(blob,name+'-reversible.png');else status('成品导出失败，请重试。',true);},'image/png');
+  }catch{status('密钥或成品导出失败，请重试。',true);}
+}
+$('download-key').addEventListener('click',()=>recoveryExport(true));
+$('download-reversible').addEventListener('click',()=>recoveryExport(false));
+let restoredCanvas=null;
+document.querySelectorAll('.restore-open').forEach(el=>el.addEventListener('click',()=>{$('restore-dialog').showModal();}));
+for(const id of ['restore-key','restore-image'])$(id).addEventListener('change',()=>{restoredCanvas=null;$('restored-preview').hidden=true;$('restore-download').hidden=true;$('restore-status').textContent='';});
+$('restore-run').addEventListener('click',async()=>{
+  const keyFile=$('restore-key').files[0],imageFile=$('restore-image').files[0];
+  if(!keyFile||!imageFile){$('restore-status').textContent='请选择密钥和配套的成品 PNG。';return;}
+  if(keyFile.size>1024*1024||imageFile.size>20*1024*1024){$('restore-status').textContent='文件过大：密钥限 1 MB，PNG 限 20 MB。';return;}
+  $('restore-run').disabled=true;for(const id of ['restore-key','restore-image'])$(id).disabled=true;
+  restoredCanvas=null;$('restore-download').hidden=true;$('restored-preview').hidden=true;
+  let url;
+  try{
+    const key=validateRecoveryKey(JSON.parse(await keyFile.text()));
+    url=URL.createObjectURL(imageFile);const image=await loadImage(url);
+    if(image.naturalWidth!==key.size||image.naturalHeight!==key.size)throw new Error('图片尺寸不匹配，请使用“下载可还原成品”得到的 PNG');
+    const c=document.createElement('canvas');c.width=c.height=key.size;const ctx=c.getContext('2d');ctx.drawImage(image,0,0);
+    const pixels=ctx.getImageData(0,0,key.size,key.size).data;
+    if(await pixelDigest(pixels)!==key.resultSha256)throw new Error('图片与密钥不匹配，或图片颜色已被修改');
+    const original=permutePixels(pixels,key.destinationToSource,true);
+    if(await pixelDigest(original)!==key.originalSha256)throw new Error('还原校验失败，密钥可能已被修改');
+    restoredCanvas=pixelCanvas(original,key.size);$('restored-preview').src=restoredCanvas.toDataURL('image/png');$('restored-preview').hidden=false;$('restore-download').hidden=false;
+    $('restore-status').textContent=`验证通过，已精确还原 ${key.size} × ${key.size} 输入像素图。`;
+  }catch(error){$('restore-status').textContent='无法还原：'+error.message;}
+  finally{if(url)URL.revokeObjectURL(url);$('restore-run').disabled=false;for(const id of ['restore-key','restore-image'])$(id).disabled=false;}
+});
+$('restore-download').addEventListener('click',()=>{if(restoredCanvas)restoredCanvas.toBlob(blob=>{if(blob)saveBlob(blob,'kobify-restored.png');},'image/png');});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&document.body.dataset.view==='result'&&ready&&(playing||settle<150))wake();});
 $('result').addEventListener('webglcontextlost',event=>{event.preventDefault();cancelCompute();stopAnimation();ready=false;setPlaybackEnabled(false);$('generate').disabled=true;status('图形上下文已中断，请刷新页面恢复。',true);});
 window.addEventListener('pagehide',()=>{cancelCompute();stopAnimation();if(sourceObjectURL)URL.revokeObjectURL(sourceObjectURL);});
