@@ -36,13 +36,11 @@
 
 ## 像素映射与还原密钥
 
-### 图钥一体 PDF
+### 图钥一体 PNG
 
-结果页“下载图钥一体 PDF”生成一页带成品预览和说明的 PDF，并通过标准 `/EmbeddedFiles` 附件嵌入 `kobify-recovery.zip`。ZIP 内固定为 `key.json`、`image.png`、`manifest.json`。它不是简单把 ZIP 追加到文件末尾，也不将原始大图写入包中。
+“下载图钥一体 PNG”生成可以直接用图片查看器打开的成品 PNG。私有附属区块 `koBy` 内保存 JSON 格式的还原密钥，图像像素不变。上传到还原窗口的“图钥一体”可自动校验并还原；旧版 PDF 图钥仍可导入。
 
-在还原窗口选择“图钥一体”虚线框中的 PDF，即自动在独立 Worker 中提取 ZIP，验证映射和 SHA-256，显示成品与还原图并允许下载。也可继续使用“添加密钥”“添加图片”两个虚线框。PDF 限 5 MB，ZIP 解压后限 2 MB，并设置解析超时；不支持修改后的附件、加密 PDF、打印或截图版本。
-
-PDF 与 ZIP 使用固定版本 pdf-lib 1.17.1 和 fflate 0.8.3，代码内嵌于 HTML，不依赖外部 CDN；许可证见 THIRD_PARTY_NOTICES.txt。`node pdf-tests.mjs` 覆盖五档往返、附件缺失、异常包及大小校验。
+PNG 限 5 MB，密钥区块限 1 MB，校验 PNG 区块 CRC、尺寸、唯一密钥、像素 SHA-256 和置换。普通截图、重新保存或社交平台压缩可能移除密钥，因此请传输原文件。`node png-tests.mjs` 验证五档往返及异常数据；`node pdf-tests.mjs` 验证旧 PDF 兼容逻辑。PDF/ZIP 依赖许可证见 THIRD_PARTY_NOTICES.txt。
 
 计算完成后，可点击“反向播放”，沿同一像素映射从成品流回输入排列。也可以下载 JSON 格式的“图像还原密钥”和配套的“可还原成品”PNG。首页与结果页均可导入这两个文件，在浏览器中精确还原并下载输入像素图。
 
