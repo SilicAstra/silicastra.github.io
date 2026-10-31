@@ -47,6 +47,7 @@ body[data-view=result]{background:#131710}body[data-view=result] .backdrop,body[
 @media(max-width:1000px) and (min-width:701px){.workspace h1{font-size:38px}}
 @media(max-width:700px){.brand{font-size:16px;gap:9px}.brand-icon{width:31px;height:31px;font-size:15px}.workspace h1{font-size:36px;letter-spacing:-1.5px}.result-intro{align-items:flex-start}.result-intro .eyebrow{font-size:10px;letter-spacing:0}.result-intro h1{font-size:29px;letter-spacing:-1px}.result-intro .target-badge{margin-top:8px}.edition{font-size:7px;gap:5px;letter-spacing:.5px}.page-footer{letter-spacing:0}}
 @media(max-width:360px){.workspace h1{font-size:32px}.result-intro .target-badge{display:none}}
+.music-toggle{position:fixed;z-index:10;right:24px;bottom:18px;display:flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid #dfff8540;border-radius:99px;background:#1b2419ef;box-shadow:0 5px 24px #0003;color:#dfff85;font-size:11px;backdrop-filter:blur(12px)}.music-toggle>span:first-child{font-size:18px;line-height:1}.music-toggle[aria-pressed=true]{background:#dfff85;color:#26341b}.page-footer{padding-right:145px}@media(max-width:700px){.music-toggle{right:14px;bottom:14px;padding:9px 12px;font-size:10px}.page-footer{padding-right:0;padding-bottom:55px;height:auto;min-height:110px}}
 </style></head>
 <body data-view="home">
 <div class="backdrop" aria-hidden="true">
@@ -92,6 +93,8 @@ body[data-view=result]{background:#131710}body[data-view=result] .backdrop,body[
   </section>
 </main>
 <footer class="page-footer"><span>SiliC AstrA — MAMBA MENTALITY.</span><span><a href="https://github.com/SilicAstra/silicastra.github.io/tree/main/kobify" target="_blank" rel="noopener">GitHub ↗</a> <span class="divider">/</span> <a href="https://github.com/Spu7Nix/obamify" target="_blank" rel="noopener">Obamify</a> · <a href="./LICENSE">MIT</a><span class="footer-star">✳</span></span></footer>
+<audio id="background-music" src="./see-you-again.mp3" preload="metadata" autoplay loop></audio>
+<button id="music-toggle" class="music-toggle" type="button" aria-label="播放背景音乐" aria-pressed="false" title="See You Again · 点击播放或暂停"><span aria-hidden="true">♫</span><span id="music-label">开启音乐</span></button>
 <noscript>请启用 JavaScript，以使用本地像素重排功能。</noscript>
 <script type="text/plain" id="matching-source">/* JavaScript adaptation of Spu7Nix/obamify src/app/calculate/mod.rs.
  * MIT, Copyright (c) 2025 Spu7Nix. See the embedded LICENSE.
@@ -327,6 +330,39 @@ class PixelRenderer{
  * fixed-step simulation, JFA rendering, and lossless PNG snapshot export.
  */
 const $=id=>document.getElementById(id);
+// Autoplay is best-effort. A blocked start is retried on the first user
+// gesture, while an explicit pause is never overridden by later clicks.
+const music=$('background-music'),musicToggle=$('music-toggle');
+let musicAutoArmed=true,musicPending=false,musicWanted=false,musicAttempt=0;
+music.volume=.4;
+function showMusic(playing,label){
+  musicToggle.setAttribute('aria-pressed',String(playing));
+  musicToggle.setAttribute('aria-label',playing?'暂停背景音乐':'播放背景音乐');
+  $('music-label').textContent=label||(playing?'音乐播放中':'音乐已暂停');
+}
+async function startMusic(){
+  if(musicPending)return;
+  const attempt=++musicAttempt;musicPending=true;musicWanted=true;
+  try{await music.play();if(attempt!==musicAttempt)return;musicAutoArmed=false;showMusic(true);}
+  catch(error){if(attempt!==musicAttempt)return;musicWanted=false;showMusic(false,error.name==='NotAllowedError'?'点击开启音乐':'音乐加载失败');}
+  finally{if(attempt===musicAttempt)musicPending=false;}
+}
+musicToggle.addEventListener('click',()=>{
+  musicAutoArmed=false;
+  if(musicWanted&&(!music.paused||musicPending)){
+    musicAttempt++;musicPending=false;musicWanted=false;music.pause();showMusic(false);
+  }else startMusic();
+});
+function unlockMusic(event){
+  if(musicAutoArmed&&!musicToggle.contains(event.target))startMusic();
+}
+document.addEventListener('pointerdown',unlockMusic);
+document.addEventListener('keydown',unlockMusic);
+music.addEventListener('playing',()=>{musicAutoArmed=false;musicWanted=true;showMusic(true);});
+music.addEventListener('pause',()=>showMusic(false));
+music.addEventListener('error',()=>{musicPending=false;musicWanted=false;showMusic(false,'音乐加载失败');});
+window.addEventListener('pagehide',()=>music.pause());
+startMusic();
 let renderer,simulation,worker=null,sourceImage=null,targetImage=null,sourcePixels,targetPixels,mapping;
 let fileGeneration=0,jobGeneration=0,currentN=32,progress=0,playing=false,raf=0,lastTime=0,accumulator=0,settle=0,ready=false;
 const levels=[
