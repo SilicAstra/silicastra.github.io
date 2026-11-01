@@ -63,3 +63,9 @@ node tests.mjs
 代码遵循 MIT；照片不因代码许可而获得额外的图片权利授权。
 
 GPU 回归：打开 `renderer-tests.html` 并点击 Run，读取真实 WebGL2 RGBA8 缓冲，校验全部 65,536 个种子 ID、空值和最后一个 ID，再逐点校验 JFA 与着色结果。
+
+## 访问统计
+
+KOBIFY 安装 Cloudflare Web Analytics 官方模块脚本，统计主机名 `silicastra.github.io`。只在 KOBIFY 页面安装，不改 DNS、GitHub Pages 托管或图片本地计算流程。脚本中的 token 是公开的站点统计标识，不是账户 API 密钥。
+
+作者可在 [Cloudflare Web Analytics 后台](https://dash.cloudflare.com/e9cf0144a0f1fa96e32be399d0a69dc1/web-analytics/overview?siteTag~in=4e2efb410f8744dc9c43c378ffe2518d&excludeBots=Yes)查看访问量、页面浏览量、来源及设备；它从安装后开始收集，不能补回历史访问。访问量不是精确去重人数，浏览器或网络拦截统计脚本/上报时会漏计。
