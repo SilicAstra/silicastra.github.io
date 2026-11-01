@@ -12,7 +12,7 @@ function setup(fetcher,copy=async()=>{}){
  element('feedback-message').value='这是测试反馈，原内容不应丢失。';element('feedback-contact').value='test@example.invalid';
  const form=element('feedback-form');form.reportValidity=()=>true;form.querySelectorAll=()=>controls;form.reset=()=>controls.forEach(e=>e.value='');element('feedback-backup').hidden=true;
  const opener=element('opener'),back=element('back');let timer,ms,cleared=false,calls=0;
- const context=vm.createContext({document:{getElementById:element,querySelectorAll:s=>s==='.feedback-open'?[opener]:[back],body:{dataset:{view:'result'}}},crypto:webcrypto,AbortController,TypeError,Error,navigator:{clipboard:{writeText:copy}},setTimeout(fn,delay){timer=fn;ms=delay;return 1;},clearTimeout(){cleared=true;},fetch:async(...args)=>{calls++;return fetcher(...args);}});
+ const context=vm.createContext({I18n:{t:x=>x},document:{getElementById:element,querySelectorAll:s=>s==='.feedback-open'?[opener]:[back],body:{dataset:{view:'result'}}},crypto:webcrypto,AbortController,TypeError,Error,navigator:{clipboard:{writeText:copy}},setTimeout(fn,delay){timer=fn;ms=delay;return 1;},clearTimeout(){cleared=true;},fetch:async(...args)=>{calls++;return fetcher(...args);}});
  vm.runInContext(script,context);
  return {el:element,submit:()=>form.listeners.submit({preventDefault(){}}),click:id=>element(id).listeners.click(),back:()=>back.listeners.click(),timer:()=>timer(),get ms(){return ms;},get calls(){return calls;},get cleared(){return cleared;}};
 }

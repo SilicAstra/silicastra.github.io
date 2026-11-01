@@ -69,3 +69,11 @@ GPU 回归：打开 `renderer-tests.html` 并点击 Run，读取真实 WebGL2 RG
 KOBIFY 安装 Cloudflare Web Analytics 官方模块脚本，统计主机名 `silicastra.github.io`。只在 KOBIFY 页面安装，不改 DNS、GitHub Pages 托管或图片本地计算流程。脚本中的 token 是公开的站点统计标识，不是账户 API 密钥。
 
 作者可在 [Cloudflare Web Analytics 后台](https://dash.cloudflare.com/e9cf0144a0f1fa96e32be399d0a69dc1/web-analytics/overview?siteTag~in=4e2efb410f8744dc9c43c378ffe2518d&excludeBots=Yes)查看访问量、页面浏览量、来源及设备；它从安装后开始收集，不能补回历史访问。访问量不是精确去重人数，浏览器或网络拦截统计脚本/上报时会漏计。
+
+## 界面语言
+
+页首语言菜单支持中文、English、日本語，以及跟随浏览器的 Auto。首次访问依次匹配 `navigator.languages` 中支持的语言：zh 系列使用简体中文、en 系列使用英语、ja 系列使用日语；无匹配时使用英语。手动选择使用 `kobify-language` 保存在本机，选择 Auto 后移除偏好。浏览器禁止本地存储时也可正常切换。
+
+本地词典翻译已知界面文案、进度和错误提示，同时更新 HTML lang、placeholder、alt 和无障碍标签；不会替换输入值、上传文件名、代码或外部 iframe。切换语言不重新计算或清空图片、动画进度、还原结果和反馈草稿。中国用户反馈的第三方表单保留中文，并提示可填写英语或日语。图钥文件格式和 SHA-256 校验不随语言变化。
+
+`node i18n-tests.mjs` 验证语言协商、区域语言、手动偏好优先级、存储不可用和动态文案；`node feedback-tests.mjs` 验证反馈流程。
