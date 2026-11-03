@@ -38,13 +38,13 @@
 
 ### 图钥一体 PNG
 
-“下载图钥一体 PNG”生成可以直接用图片查看器打开的成品 PNG。私有附属区块 `koBy` 内保存 JSON 格式的还原密钥，图像像素不变。上传到还原窗口的“图钥一体”可自动校验并还原；旧版 PDF 图钥仍可导入。
+“下载图钥一体 PNG”生成可以直接用图片查看器打开的成品 PNG。私有附属区块 `koBy` 内保存标准 ZIP（`manifest.json`、`key.json`、`image.png`），图像像素不变。点击下载会弹出可选密码窗口：留空生成普通 ZIP，填写则使用 WinZip AES-256 AE-2 加密三个 ZIP 条目。图片查看器仍可直接显示外层 PNG 成品；密码只保护内嵌 ZIP。上传“图钥一体”时，无密码自动还原，有密码才显示解锁表单，输错可重试。旧版 JSON PNG（v1）和 PDF 图钥仍兼容。
 
-PNG 限 5 MB，密钥区块限 1 MB，校验 PNG 区块 CRC、尺寸、唯一密钥、像素 SHA-256 和置换。普通截图、重新保存或社交平台压缩可能移除密钥，因此请传输原文件。`node png-tests.mjs` 验证五档往返及异常数据；`node pdf-tests.mjs` 验证旧 PDF 兼容逻辑。PDF/ZIP 依赖许可证见 THIRD_PARTY_NOTICES.txt。
+PNG 限 5 MB，密钥区块限 1 MB，校验 PNG 区块 CRC、尺寸、唯一密钥、像素 SHA-256 和置换。普通截图、重新保存或社交平台压缩可能移除密钥，因此请传输原文件。`node zip-password-tests.mjs` 验证五档、有/无密码、中文/表情与空格密码、错误密码、认证损坏、随机盐及旧版兼容；`node png-tests.mjs` 验证旧 PNG 往返及异常数据；`node pdf-tests.mjs` 验证旧 PDF 兼容逻辑。PDF/ZIP 依赖许可证见 THIRD_PARTY_NOTICES.txt。AES ZIP 使用固定版 `@zip.js/zip.js 2.24.0` 的内嵌 zip-core（BSD-3-Clause，npm SHA-512 已核对，资产 SHA-256 见 zip-aes-provenance.json）。ZIP 使用 STORE，不需要额外下载 WASM/压缩代码；提取在现有专用 Worker 中进行。解析前校验恰好三个条目、STORE、大小与目录结构，再验证 AES 认证/CRC、PNG 数据一致性、像素 SHA-256 和置换。
 
 计算完成后，可点击“反向播放”，沿同一像素映射从成品流回输入排列。也可以下载 JSON 格式的“图像还原密钥”和配套的“可还原成品”PNG。首页与结果页均可导入这两个文件，在浏览器中精确还原并下载输入像素图。
 
-密钥字段：`format: kobify-pixel-key`、`version: 1`、`size`、`destinationToSource`（左上角起、逐行排列；目标位置对应的源像素索引）、`resultSha256` 和 `originalSha256`（RGBA 字节的 SHA-256）。密钥没有原图像素数据，不是密码学加密。位置映射会随图片或设置重新计算，应成对保存。
+密钥字段：`format: kobify-pixel-key`、`version: 1`、`size`、`destinationToSource`（左上角起、逐行排列；目标位置对应的源像素索引）、`resultSha256` 和 `originalSha256`（RGBA 字节的 SHA-256）。单独 JSON 密钥没有原图像素数据，不是密码学加密；只有选择密码导出的内嵌 ZIP 会加密。密码不写入 PNG 元数据、URL、反馈、localStorage 或报告；关闭窗口即清空输入，忘记后本站无法找回。位置映射会随图片或设置重新计算，应成对保存。
 
 “可还原成品”直接导出 n×n 的最终排列，不受当前播放进度、目标配色或 WebGL 渲染影响。普通预览下载、JPEG、调色或改尺寸后的图片不能用于精确还原；尺寸与颜色校验不通过时会拒绝还原。恢复范围是本次裁剪、缩放、白底合成后的 n×n 输入，不包括原始大图的细节和裁剪区域。
 
@@ -77,3 +77,9 @@ KOBIFY 安装 Cloudflare Web Analytics 官方模块脚本，统计主机名 `sil
 本地词典翻译已知界面文案、进度和错误提示，同时更新 HTML lang、placeholder、alt 和无障碍标签；不会替换输入值、上传文件名、代码或外部 iframe。切换语言不重新计算或清空图片、动画进度、还原结果和反馈草稿。中国用户反馈的第三方表单保留中文，并提示可填写英语或日语。图钥文件格式和 SHA-256 校验不随语言变化。
 
 `node i18n-tests.mjs` 验证语言协商、区域语言、手动偏好优先级、存储不可用和动态文案；`node feedback-tests.mjs` 验证反馈流程。
+
+### ZIP 密码功能本地验证（2026-11-03）
+
+15组自动往返覆盖64/96/128/192/256档，每档分别无密码、Unicode密码和空格密码，精确验证还原像素SHA-256。额外用Python标准zipfile读取无密码ZIP，用独立pyzipper读取AES-256 ZIP并确认错误密码拒绝，验证密码是真正的ZIP密码。网页实际验证无密码自动还原、有密码提示、错误密码重试、正确密码精确还原、单次输入设置密码、留空普通下载、密码加密下载及关闭后清空输入。测试示例及报告保存在仓库外 `output/zip-password-tests/`，并非用户密码。此次仅本地修改，未提交、push或部署。
+
+密码窗口文案统一为“设置密码”，只需输入一次；还原窗口只提示“文件密码”。具体ZIP加密格式保留在技术文档中，不在密码设置界面展示。
