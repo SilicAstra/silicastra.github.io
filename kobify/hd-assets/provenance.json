@@ -1,0 +1,84 @@
+{
+  "upscaler": "1.0.0",
+  "esrgan-slim": "1.0.0",
+  "tfjs": "4.22.0",
+  "files": [
+    {
+      "file": "tf.min.js",
+      "sha256": "300dfae273d20b4046f46a06d735688f03675a807561e9bcb5f664eb2f3d2831",
+      "bytes": 1469843
+    },
+    {
+      "file": "upscaler.min.js",
+      "sha256": "79686f0cd48e331481f649c05cbca217ab66a371580d708201e1530f47ce1c6b",
+      "bytes": 13958
+    },
+    {
+      "file": "model.json",
+      "sha256": "3a2eaa642232567e7d2a2e7638c9704f42f63f355fc656c18aa78bf2da1d903d",
+      "bytes": 12336
+    },
+    {
+      "file": "group1-shard1of1.bin",
+      "sha256": "82637daaf3ba024df5e9da2389e8992e7a6e8a992ba6268ce6bc490c92e9516e",
+      "bytes": 933804
+    }
+  ],
+  "npm": [
+    {
+      "name": "@tensorflow/tfjs",
+      "version": "4.22.0",
+      "license": "Apache-2.0",
+      "dist": {
+        "shasum": "6fa2d850d39579ef190d2cb8d2451524059ddab5",
+        "tarball": "https://registry.npmjs.org/@tensorflow/tfjs/-/tfjs-4.22.0.tgz",
+        "fileCount": 77,
+        "integrity": "sha512-0TrIrXs6/b7FLhLVNmfh8Sah6JgjBPH4mZ8JGb7NU6WW+cx00qK5BcAZxw7NCzxj6N8MRAIfHq+oNbPUNG5VAg==",
+        "signatures": [
+          {
+            "sig": "MEQCIAwk6tksUUv7n8MP5LUUOzOpA64oChUK+5HHHJOGJoF2AiBWBYeYc+IG2Ellu0fpA/OKT4R5MSz1Z3IK+oqkD0eAFA==",
+            "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+          }
+        ],
+        "unpackedSize": 147474474
+      }
+    },
+    {
+      "name": "upscaler",
+      "version": "1.0.0",
+      "license": "MIT",
+      "dist": {
+        "shasum": "f6d60622535031826e976c1b2fdb7ec752140bcc",
+        "tarball": "https://registry.npmjs.org/upscaler/-/upscaler-1.0.0.tgz",
+        "fileCount": 185,
+        "integrity": "sha512-oQcxcShLj+HDHCtQBbdqQnFYwwgKeaU2wPNj4QL+Q/Gr05Vm9kXFU7TNl7ZpTR9ic0u4tOl70ZcQcUFODMUV/g==",
+        "signatures": [
+          {
+            "sig": "MEYCIQDGbOW4Wfz0Sph6pw4Z5LQ97Wv+iQkFz2uieC+OGzn8NwIhAJxuBbFLzlGwnqnaSHxTmLUw29NVjpznQEzUiirOVovy",
+            "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+          }
+        ],
+        "unpackedSize": 450088
+      }
+    },
+    {
+      "name": "@upscalerjs/esrgan-slim",
+      "version": "1.0.0",
+      "license": "MIT",
+      "dist": {
+        "shasum": "4cb9ea10441ce556f2f8c621c1771a101a27a702",
+        "tarball": "https://registry.npmjs.org/@upscalerjs/esrgan-slim/-/esrgan-slim-1.0.0.tgz",
+        "fileCount": 99,
+        "integrity": "sha512-DXtwn5SE71+pZKluN/hGeLaZv6ZylyFQYSvMqU08kKCEA5Y9Q1cIIk4EvPTPZw8VqGi2C6F02c8OjhtId4BK2w==",
+        "signatures": [
+          {
+            "sig": "MEUCIQDlP2TS91wUAfj4zyvQm8r5EmPNMRzAJCUmoDmkxoaAHgIgWlxQ11WkmniqdOkXbKXtwUenrLyOdDUMDmxuoZ99X5w=",
+            "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+          }
+        ],
+        "unpackedSize": 4755465
+      }
+    }
+  ],
+  "architecture": "UpscalerJS ESRGAN-slim RDN x4; not a Real-ESRGAN conversion"
+}
