@@ -81,11 +81,13 @@ body[data-view=result]{background:#131710}body[data-view=result] .backdrop,body[
 }
 .portrait[data-target-portrait="custom"]{width:100%;object-position:76% 50%;filter:brightness(.75)}
 #home-view #title{
-  width:fit-content;max-width:100%;box-sizing:border-box;margin:0 0 16px;padding:7px 10px;
-  border:1px solid #9bb56d;border-radius:9px;background:#e5efcf;color:#344b1d;
-  font-size:clamp(21px,2.2vw,32px);line-height:1.28;letter-spacing:0;white-space:normal;
-  box-shadow:0 3px 14px #141a1040
+  display:flex;align-items:baseline;gap:.35em;margin:0 0 16px;
+  color:#344b1d;font-size:clamp(21px,2.2vw,32px);font-weight:800;line-height:1.28;
+  letter-spacing:.015em;white-space:normal;
+  -webkit-text-stroke:1px #e5efcf;paint-order:stroke fill;
+  text-shadow:0 1px 8px #0e150dbb;
 }
+#home-view #title::before{content:"-";color:#d5e7ad;-webkit-text-stroke:0}
 #home-view[data-target="thanos"] #title{font-size:clamp(18px,1.65vw,26px)}
 @media(max-width:360px){#home-view[data-target="thanos"] #title{font-size:17px}}
 .target-picker{display:grid;grid-template-columns:1fr 52px;gap:8px 12px;margin:16px 0;align-items:center}
@@ -95,6 +97,15 @@ body[data-view=result]{background:#131710}body[data-view=result] .backdrop,body[
 .target-picker :is(select,button):focus-visible{outline:2px solid #526b30;outline-offset:2px}
 .target-picker button{grid-column:1/-1;text-align:left;cursor:pointer}
 .target-picker img{width:52px;height:52px;object-fit:cover;border-radius:8px;border:1px solid #677852}
+
+.key-tools .bundle-primary{background:#dfff85;border-color:#dfff85;color:#26391a;font-size:14px;font-weight:800;padding:11px 16px}
+.download-more,.restore-more{color:#bbcba9;font-size:12px}
+.download-more > summary,.restore-more > summary{cursor:pointer;width:fit-content;padding:8px 2px}
+.download-more[open]{flex-basis:100%}
+.download-more > div{display:flex;flex-wrap:wrap;gap:8px}
+#restore-dialog > .unified{width:100%;min-height:126px;margin:16px 0 6px}
+#restore-dialog > .unified [hidden]{display:none}
+.restore-more .restore-pair{margin-top:4px}
 </style><!--
 Third-party notices for bundled PDF/ZIP libraries
 
@@ -290,7 +301,6 @@ PERFORMANCE OF THIS SOFTWARE.
       <details class="advanced"><summary>更多设置</summary><label for="crop">画面适配</label><select id="crop"><option value="cover">居中裁剪 · 填满画面</option><option value="contain">保留全图 · 白色留边</option></select><label for="structure">保留原图结构 <output id="structure-value">15%</output></label><input id="structure" type="range" min="0" max="100" value="15"></details>
       <div class="panel-footer"><span class="tiny-dot"></span><span>档位越高，像素越细，细节越丰富</span></div>
     </div>
-    <p class="local-note">◎ 图片仅在浏览器本地处理 · 无需登录</p>
   </section>
   <aside class="scene-label" aria-live="polite"><span class="scene-overline">HARDNESS LEVEL</span><div class="scene-state"><span id="scene-number">03</span><div><strong id="scene-name">硬派登场</strong><span id="scene-description">128 × 128 · 16,384 个像素</span></div></div></aside>
 </main>
@@ -302,13 +312,29 @@ PERFORMANCE OF THIS SOFTWARE.
     <div class="canvas-shell"><canvas id="result" width="384" height="384" role="img" aria-label="图片像素重排动画预览"></canvas><img id="hd-preview" alt="重排成品" hidden><img id="original-overlay" alt="原图对照" hidden></div>
     <div class="compute-area"><progress id="compute-progress" max="1" value="0" hidden aria-label="像素重排计算进度"></progress><p id="result-status" class="status" role="status"></p><button id="cancel" class="cancel" hidden>取消计算并返回</button></div>
     <div class="transport"><button id="play" disabled aria-label="播放变形动画">▶</button><label for="timeline" class="sr-only">变形进度</label><input id="timeline" type="range" min="0" max="100" value="0" step="1" disabled><output id="time-value">0%</output><button id="compare" disabled aria-pressed="false">对照原图</button><button id="download" disabled>下载成品 PNG ↓</button></div>
-    <div class="key-tools"><button id="reverse" disabled>↶ 反向播放</button><button id="download-key" disabled>下载图像还原密钥 ↓</button><button id="download-reversible" disabled>下载可还原成品 ↓</button><button id="download-pdf" disabled>下载图钥一体 PNG ↓</button><button class="restore-open" type="button">使用密钥还原 ↗</button><p>导出使用原图配色。可搭配密钥还原，图钥一体可选设置密码。</p></div>
+    <div class="key-tools">
+      <button id="download-pdf" class="bundle-primary" disabled>下载可还原图片</button>
+      <button id="reverse" disabled>↶ 反向播放</button>
+      <button class="restore-open" type="button">使用密钥还原 ↗</button>
+      <details class="download-more">
+        <summary>更多</summary>
+        <div>
+          <button id="download-key" disabled>下载图像还原密钥 ↓</button>
+          <button id="download-reversible" disabled>下载可还原成品 ↓</button>
+        </div>
+      </details>
+    </div>
     <div class="color-control"><div><label for="color-blend">目标配色</label><output id="blend-value">0%</output><span id="blend-note">保持原图颜色</span></div><input id="color-blend" type="range" min="0" max="100" value="0" disabled><p>原图颜色不足时，可提高此项，混合目标图片的颜色，使预览更接近目标。</p></div>
   </section>
 </main>
 <footer class="page-footer"><span>SiliC AstrA — MAMBA MENTALITY.</span><span><button class="feedback-open" type="button">向作者反馈 ↗</button> <span class="divider">/</span> <a href="https://github.com/SilicAstra/silicastra.github.io/tree/main/kobify" target="_blank" rel="noopener">GitHub ↗</a> <span class="divider">/</span> <a href="https://github.com/Spu7Nix/obamify" target="_blank" rel="noopener">Obamify</a> · <a href="./LICENSE">MIT</a><span class="footer-star">✳</span></span></footer>
-<dialog id="bundle-export-dialog" aria-labelledby="bundle-export-title"><form id="bundle-export-form"><p class="restore-eyebrow">BLACK MAMBA / PASSWORD</p><h2 id="bundle-export-title">设置密码</h2><p>密码选填，留空则不设置密码。</p><label for="bundle-password">密码（选填）</label><input id="bundle-password" type="password" maxlength="256" autocomplete="new-password" placeholder="留空则无密码"><label class="password-show"><input id="bundle-password-show" type="checkbox">显示密码</label><p id="bundle-password-status" role="status" aria-live="polite"></p><div class="password-actions"><button id="bundle-password-cancel" type="button">取消</button><button id="bundle-password-submit" type="submit">打包并下载 PNG ↓</button></div><small>密码不会上传或保存，忘记后无法找回。</small></form></dialog>
-<dialog id="restore-dialog" aria-labelledby="restore-title"><form method="dialog"><button class="restore-close" aria-label="关闭还原窗口">✕</button></form><p class="restore-eyebrow">BLACK MAMBA / RECOVERY</p><h2 id="restore-title">kobe Out</h2><p>分开选择密钥与成品，或上传一张图钥一体 PNG（兼容旧版 PDF）。所有提取和还原都在本地完成。</p><div class="restore-choices"><fieldset class="restore-pair"><legend>密钥＋图片 · 配合使用</legend><div class="restore-pair-cards"><button type="button" class="restore-card" data-input="restore-key"><span aria-hidden="true">⌘</span><strong>添加密钥</strong><small id="restore-key-name">JSON 密钥文件</small><em>点击选择 / 拖入文件</em></button><button type="button" class="restore-card" data-input="restore-image"><span aria-hidden="true">▧</span><strong>添加图片</strong><small id="restore-image-name">可还原成品 PNG</small><em>点击选择 / 拖入文件</em></button></div></fieldset><button type="button" class="restore-card unified" data-input="restore-pdf"><span aria-hidden="true">↺</span><strong>图钥一体</strong><small id="restore-pdf-name">内嵌密钥的 PNG</small><em>选择后自动还原</em></button></div><input id="restore-key" type="file" accept=".json,application/json" hidden><input id="restore-image" type="file" accept="image/png" hidden><input id="restore-pdf" type="file" accept=".png,image/png,.pdf,application/pdf" hidden><form id="restore-password-form" hidden><label for="restore-password">文件密码</label><input id="restore-password" type="password" maxlength="256" autocomplete="off" placeholder="请输入密码"><div class="password-actions"><button id="restore-password-cancel" type="button">取消解锁</button><button type="submit">解锁并还原</button></div></form><button id="restore-run" type="button">验证并还原密钥＋图片</button><p id="restore-status" role="status" aria-live="polite"></p><div id="restore-results" hidden><figure class="restored-secondary"><img id="restored-result-preview" alt="图钥或文件中的可还原成品"><figcaption>转换后的成品</figcaption></figure><figure class="restored-main"><img id="restored-preview" alt="按密钥还原的输入像素图"><figcaption>已还原的输入图</figcaption></figure><button id="restore-download" type="button" hidden>下载还原图片 ↓</button></div></dialog>
+<dialog id="bundle-export-dialog" aria-labelledby="bundle-export-title"><form id="bundle-export-form"><p class="restore-eyebrow">BLACK MAMBA / PASSWORD</p><h2 id="bundle-export-title">设置密码</h2><p>密码选填，留空则不设置密码。</p><label for="bundle-password">密码（选填）</label><input id="bundle-password" type="password" maxlength="256" autocomplete="new-password" placeholder="留空则无密码"><label class="password-show"><input id="bundle-password-show" type="checkbox">显示密码</label><p id="bundle-password-status" role="status" aria-live="polite"></p><div class="password-actions"><button id="bundle-password-cancel" type="button">取消</button><button id="bundle-password-submit" type="submit">下载 PDF</button></div><small>密码不会上传或保存，忘记后无法找回。</small></form></dialog>
+<dialog id="restore-dialog" aria-labelledby="restore-title"><form method="dialog"><button class="restore-close" aria-label="关闭还原窗口">✕</button></form><h2 id="restore-title">MANBA OUT</h2>
+  <button type="button" class="restore-card unified" data-input="restore-pdf"><span aria-hidden="true">↺</span><strong>还原图片</strong><small id="restore-pdf-name" hidden></small><em>选择后自动还原</em></button>
+  <details id="restore-more" class="restore-more"><summary>更多还原</summary>
+    <fieldset class="restore-pair"><legend>密钥＋图片 · 配合使用</legend><div class="restore-pair-cards"><button type="button" class="restore-card" data-input="restore-key"><span aria-hidden="true">⌘</span><strong>添加密钥</strong><small id="restore-key-name">JSON 密钥文件</small><em>点击选择 / 拖入文件</em></button><button type="button" class="restore-card" data-input="restore-image"><span aria-hidden="true">▧</span><strong>添加图片</strong><small id="restore-image-name">可还原成品 PNG</small><em>点击选择 / 拖入文件</em></button></div></fieldset><button id="restore-run" type="button">验证并还原密钥＋图片</button>
+  </details>
+  <input id="restore-key" type="file" accept=".json,application/json" hidden><input id="restore-image" type="file" accept="image/png" hidden><input id="restore-pdf" type="file" accept=".png,image/png,.pdf,application/pdf" hidden><form id="restore-password-form" hidden><label for="restore-password">文件密码</label><input id="restore-password" type="password" maxlength="256" autocomplete="off" placeholder="请输入密码"><div class="password-actions"><button id="restore-password-cancel" type="button">取消解锁</button><button type="submit">解锁并还原</button></div></form><p id="restore-status" role="status" aria-live="polite"></p><div id="restore-results" hidden><figure class="restored-secondary"><img id="restored-result-preview" alt="图钥或文件中的可还原成品"><figcaption>转换后的成品</figcaption></figure><figure class="restored-main"><img id="restored-preview" alt="按密钥还原的输入像素图"><figcaption>已还原的输入图</figcaption></figure><button id="restore-download" type="button" hidden>下载还原图片 ↓</button></div></dialog>
 <dialog id="feedback-dialog" aria-labelledby="feedback-title"><button id="feedback-close" type="button" aria-label="关闭反馈窗口">✕</button><p class="feedback-eyebrow">BLACK MAMBA / FEEDBACK</p><h2 id="feedback-title">向作者反馈</h2><p class="feedback-intro">遇到问题，或有个新想法？告诉 SiliC AstrA。</p><form id="feedback-form"><label for="feedback-category">反馈类型</label><select id="feedback-category"><option value="bug">遇到问题</option><option value="suggestion">功能建议</option><option value="other">其他反馈</option></select><label for="feedback-message">反馈内容</label><textarea id="feedback-message" minlength="5" maxlength="2000" rows="5" required placeholder="请描述问题、操作步骤或你的建议（至少 5 个字符）"></textarea><div id="feedback-count">0 / 2000</div><label for="feedback-contact">联系方式 <span>选填，方便作者回复</span></label><input id="feedback-contact" maxlength="120" placeholder="邮箱或其他联系方式" autocomplete="off"><div class="feedback-honeypot" aria-hidden="true"><label for="feedback-website">Website</label><input id="feedback-website" tabindex="-1" autocomplete="off"></div><p class="feedback-privacy">主通道将反馈及选填联系方式存入作者反馈箱，不上传图片或密钥。连接失败将切换中国用户反馈通道；主通道为防刷会使用按日变化的网络地址摘要。</p><button id="feedback-submit" type="submit">发送给作者 ↗</button><p id="feedback-status" role="status" aria-live="polite"></p><button id="feedback-backup-open" type="button">中国用户反馈 ↗</button></form>
 <section id="feedback-backup" hidden aria-labelledby="feedback-backup-title"><div class="feedback-backup-heading"><span class="feedback-route-dot" aria-hidden="true"></span><h3 id="feedback-backup-title" tabindex="-1">中国用户反馈</h3></div><p id="feedback-backup-reason" role="status" aria-live="polite"></p><div id="feedback-draft-wrap" hidden><label for="feedback-draft">刚才填写的反馈 <span>可复制到下方表单</span></label><textarea id="feedback-draft" rows="4" readonly></textarea><div class="feedback-draft-actions"><button id="feedback-copy" type="button">复制反馈内容</button><button class="feedback-primary-open" type="button">返回原反馈窗口</button></div><p id="feedback-copy-status" role="status" aria-live="polite"></p><p class="feedback-privacy">联系方式仍保留在原窗口，如需作者回复，请在下方表单的选填项中填写。复制内容包含类型、反馈文字和反馈编号。</p></div><div class="feedback-external"><a href="https://mxhbigh6.jsjform.com/f/vu5XKX" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">在新窗口打开中国用户反馈 ↗</a><span>请以下方表单的提交成功提示为准</span></div><p class="feedback-privacy">中国用户反馈表单为中文，可填写英语或日语。</p><iframe id="feedback-backup-frame" title="中国用户反馈表单" referrerpolicy="no-referrer"></iframe><p class="feedback-privacy">本页只自动切换通道，不会自动替你提交。请粘贴内容后点击下方的“提交”；不要重复发送已成功的反馈。</p><button class="feedback-primary-open feedback-back-bottom" type="button">返回原反馈窗口</button></section></dialog>
 <audio id="background-music" src="./see-you-again.mp3" preload="metadata" autoplay loop></audio>
@@ -318,6 +344,11 @@ PERFORMANCE OF THIS SOFTWARE.
  * uploaded filenames, executable source, or the third-party feedback iframe. */
 const I18n=(()=>{
  const dictionary={
+  "更多": ["More", "その他"],
+  "更多还原": ["More recovery options", "その他の復元方法"],
+  "正在生成 PDF…": ["Preparing PDF…", "PDFを作成中…"],
+  "下载 PDF": ["Download PDF", "PDFをダウンロード"],
+  "下载可还原图片": ["Download restorable image", "復元できる画像を保存"],
   "重排成品": ["Rearranged image", "並べ替え後の画像"],
   "像素校验通过，正在准备还原图片…": ["Pixels verified. Preparing the restored image…", "ピクセルの検証が完了しました。復元画像を準備中です…"],
   "暂时无法导出图片，请重试。": ["Could not export the image. Please retry.", "画像を書き出せませんでした。もう一度お試しください。"],
@@ -452,10 +483,6 @@ const I18n=(()=>{
     "Higher resolution reveals finer detail",
     "解像度を上げると、より細かな表現に"
   ],
-  "◎ 图片仅在浏览器本地处理 · 无需登录": [
-    "◎ Images stay in your browser · No sign-in",
-    "◎ 画像処理はブラウザー内で完結 · ログイン不要"
-  ],
   "原始状态": [
     "Original state",
     "オリジナル"
@@ -552,17 +579,9 @@ const I18n=(()=>{
     "Download reversible image ↓",
     "復元用画像をダウンロード ↓"
   ],
-  "下载图钥一体 PNG ↓": [
-    "Download image + key PNG ↓",
-    "キー内蔵 PNG を保存 ↓"
-  ],
   "使用密钥还原 ↗": [
     "Restore with a key ↗",
     "キーで復元 ↗"
-  ],
-  "导出使用原图配色。可搭配密钥还原，图钥一体可选设置密码。": [
-    "Exports use the source colors. Restore with a key, or download an image with the key embedded and an optional password.",
-    "書き出しには元画像の配色を使用します。復元キーと一緒に使えます。キー内蔵画像のパスワードは任意です。"
   ],
   "目标配色": [
     "Target color blend",
@@ -583,10 +602,6 @@ const I18n=(()=>{
   "关闭还原窗口": [
     "Close recovery window",
     "復元ウィンドウを閉じる"
-  ],
-  "分开选择密钥与成品，或上传一张图钥一体 PNG（兼容旧版 PDF）。所有提取和还原都在本地完成。": [
-    "Choose a key and its matching image, or upload an image + key PNG (legacy PDFs supported). Extraction and restoration stay local.",
-    "キーと対応する完成画像、またはキー内蔵 PNG を選択してください（旧 PDF にも対応）。抽出と復元は端末内で行います。"
   ],
   "密钥＋图片 · 配合使用": [
     "Key + image · Use together",
@@ -615,10 +630,6 @@ const I18n=(()=>{
   "图钥一体": [
     "Image + key",
     "キー内蔵画像"
-  ],
-  "内嵌密钥的 PNG": [
-    "PNG with embedded key",
-    "復元キー内蔵 PNG"
   ],
   "选择后自动还原": [
     "Restores automatically",
@@ -908,10 +919,6 @@ const I18n=(()=>{
     "PNG export failed",
     "PNG の保存に失敗しました"
   ],
-  "正在打包 PNG…": [
-    "Packing PNG…",
-    "PNG を作成中…"
-  ],
   "图片尺寸不匹配，请使用配套的可还原成品 PNG": [
     "Image dimensions do not match. Use the matching restorable PNG.",
     "画像サイズが一致しません。対応する復元用 PNG を選択してください。"
@@ -932,7 +939,7 @@ const I18n=(()=>{
     "Key limit: 1 MB. PNG limit: 20 MB.",
     "キーは 1 MB、PNG は 20 MB 以下にしてください。"
   ],
-  "图钥解析超时，请使用本站生成的 PNG 或旧版 PDF": [
+  "图钥解析超时，请使用本站生成的 PDF 或 PNG": [
     "Parsing timed out. Use an image + key PNG or legacy PDF from this site.",
     "解析がタイムアウトしました。本站のキー内蔵 PNG または旧 PDF を選択してください。"
   ],
@@ -1247,10 +1254,6 @@ const I18n=(()=>{
   "显示密码": [
     "Show password",
     "パスワードを表示"
-  ],
-  "打包并下载 PNG ↓": [
-    "Package and download PNG ↓",
-    "PNG を作成してダウンロード ↓"
   ],
   "密码不会上传或保存，忘记后无法找回。": [
     "Passwords are not uploaded or saved and cannot be recovered.",
@@ -1647,20 +1650,20 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 <script id="bundle-source">/* Standard PDF EmbeddedFiles attachment, containing an ordinary ZIP.
  * Kept separate from canvas/UI so the same code can be round-trip tested. */
 const BUNDLE_ZIP_LIMIT=2*1024*1024;
-async function createRecoveryPdf(key,png,coverPng){
+async function createRecoveryPdf(key,png,coverPng,password){
   validateRecoveryKey(key);
-  const zip=fflate.zipSync({'key.json':fflate.strToU8(JSON.stringify(key)),'image.png':png,'manifest.json':fflate.strToU8(JSON.stringify({format:'kobify-pdf-bundle',version:1,key:'key.json',image:'image.png'}))},{level:6});
-  if(zip.length>BUNDLE_ZIP_LIMIT)throw new Error('图钥数据过大');
+  const archive=password===undefined?fflate.zipSync({'key.json':fflate.strToU8(JSON.stringify(key)),'image.png':png,'manifest.json':fflate.strToU8(JSON.stringify({format:'kobify-pdf-bundle',version:1,key:'key.json',image:'image.png'}))},{level:6}):await createRecoveryZip(key,png,password);
+  if(archive.length>BUNDLE_ZIP_LIMIT)throw new Error('图钥数据过大');
   const doc=await PDFLib.PDFDocument.create();
   doc.setTitle('Black Mamba - Image Recovery Bundle');doc.setAuthor('SiliC AstrA');doc.setSubject('Canonical pixel image and recovery key in an embedded ZIP');
-  const page=doc.addPage([595,842]);
-  if(coverPng){const cover=await doc.embedPng(coverPng);page.drawImage(cover,{x:0,y:0,width:595,height:842});}
+  const page=doc.addPage(password===undefined?[595,842]:[595,595]);
+  if(coverPng){const cover=await doc.embedPng(coverPng);page.drawImage(cover,{x:0,y:0,width:page.getWidth(),height:page.getHeight()});}
   else{page.drawText('BLACK MAMBA - RECOVERY BUNDLE',{x:40,y:790,size:18});const image=await doc.embedPng(png);page.drawImage(image,{x:80,y:240,width:435,height:435});page.drawText('Import this PDF at https://silicastra.github.io/kobify/',{x:40,y:100,size:11});}
-  await doc.attach(zip,'kobify-recovery.zip',{mimeType:'application/zip',description:'Pixel image + restoration key',afRelationship:PDFLib.AFRelationship.Data});
+  await doc.attach(archive,password===undefined?'kobify-recovery.zip':'kobify-recovery-v2.zip',{mimeType:'application/zip',description:'Pixel image + restoration key',afRelationship:PDFLib.AFRelationship.Data});
   // Avoid compressed object streams; the attachment is still an ordinary ZIP.
   return doc.save({useObjectStreams:false});
 }
-async function readRecoveryPdf(bytes){
+async function readRecoveryPdf(bytes,password=''){
   if(bytes.length>5*1024*1024)throw new Error('PDF 最大支持 5 MB');
   if(new TextDecoder().decode(bytes.subarray(0,5))!=='%PDF-')throw new Error('这不是有效的 PDF 文件');
   const {PDFDocument,PDFName,PDFDict,PDFArray,PDFRawStream,PDFNumber}=PDFLib;
@@ -1672,11 +1675,12 @@ async function readRecoveryPdf(bytes){
   function walk(tree,depth=0){
     if(depth>12||++nodes>128||seen.has(tree))throw new Error('PDF 附件结构异常');seen.add(tree);
     const list=tree.lookupMaybe(PDFName.of('Names'),PDFArray);
-    if(list){if(list.size()>128||list.size()%2)throw new Error('PDF 附件列表异常');for(let i=0;i<list.size();i+=2){const name=list.lookup(i);if(typeof name.decodeText==='function'&&name.decodeText()==='kobify-recovery.zip')matches.push(list.lookup(i+1,PDFDict));}}
+    if(list){if(list.size()>128||list.size()%2)throw new Error('PDF 附件列表异常');for(let i=0;i<list.size();i+=2){const name=list.lookup(i);if(typeof name.decodeText!=='function')continue;const filename=name.decodeText();if(filename==='kobify-recovery.zip'||filename==='kobify-recovery-v2.zip')matches.push({file:list.lookup(i+1,PDFDict),modern:filename==='kobify-recovery-v2.zip'});}}
     const kids=tree.lookupMaybe(PDFName.of('Kids'),PDFArray);if(kids){if(kids.size()>128)throw new Error('附件数量过多');for(let i=0;i<kids.size();i++)walk(kids.lookup(i,PDFDict),depth+1);}
   }
   walk(root);if(matches.length!==1)throw new Error('没有找到唯一的图钥 ZIP 附件');
-  const stream=matches[0].lookup(PDFName.of('EF'),PDFDict).lookup(PDFName.of('F'),PDFRawStream);
+  const {file,modern}=matches[0];
+  const stream=file.lookup(PDFName.of('EF'),PDFDict).lookup(PDFName.of('F'),PDFRawStream);
   const size=stream.dict.lookupMaybe(PDFName.of('Params'),PDFDict)?.lookupMaybe(PDFName.of('Size'),PDFNumber)?.asNumber();
   if(!Number.isInteger(size)||size<1||size>BUNDLE_ZIP_LIMIT||stream.getContentsSize()>BUNDLE_ZIP_LIMIT)throw new Error('PDF 附件大小超出限制');
   const filter=stream.dict.get(PDFName.of('Filter'));let zip;
@@ -1684,6 +1688,7 @@ async function readRecoveryPdf(bytes){
   else if(filter.toString()==='/FlateDecode'&&!stream.dict.has(PDFName.of('DecodeParms')))zip=fflate.unzlibSync(stream.getContents(),{out:new Uint8Array(size+1)});
   else throw new Error('不支持此 PDF 附件编码');
   if(zip.length!==size)throw new Error('PDF 附件长度校验失败');
+  if(modern)return readRecoveryZip(zip,password);
   const limits={'manifest.json':4096,'key.json':1024*1024,'image.png':1024*1024};let total=0,entries=0;
   const files=fflate.unzipSync(zip,{filter(file){if(!Object.hasOwn(limits,file.name)||++entries>3)throw new Error('ZIP 包含不支持的文件');if(!Number.isInteger(file.originalSize)||file.originalSize>limits[file.name]||file.originalSize<1||(total+=file.originalSize)>BUNDLE_ZIP_LIMIT)throw new Error('ZIP 解压大小超限');return true;}});
   if(Object.keys(files).length!==3||!files['key.json']||!files['image.png']||!files['manifest.json'])throw new Error('ZIP 缺少密钥或成品图片');
@@ -1738,15 +1743,16 @@ function writePngBundlePayload(png,payload,type='koBy'){
 function stripPngBundle(bytes){
  inspectRecoveryPng(bytes);let total=8,parts=[bytes.subarray(0,8)];for(let p=8;p<bytes.length;){const n=new DataView(bytes.buffer,bytes.byteOffset+p,4).getUint32(0)+12;if(String.fromCharCode(...bytes.subarray(p+4,p+8))!=='koBy'){parts.push(bytes.subarray(p,p+n));total+=n;}p+=n;}const out=new Uint8Array(total);let offset=0;for(const part of parts){out.set(part,offset);offset+=part.length;}return out;
 }
-async function createRecoveryPngZip(key,png,password=''){
+async function createRecoveryZip(key,png,password=''){
  validateRecoveryKey(key);password=bundlePassword(password);const parsed=inspectRecoveryPng(png);if(parsed.key||parsed.width!==key.size)throw new Error('成品与密钥不匹配');
  const encodedKey=new TextEncoder().encode(JSON.stringify(key));if(encodedKey.length>1024*1024)throw new Error('密钥数据过大');
  const manifest=new TextEncoder().encode(JSON.stringify({format:'kobify-png-zip-bundle',version:2,key:'key.json',image:'image.png'}));
  // STORE needs no codec/WASM fetch. Our own Worker handles reading; zip.js does
  // not create nested workers or send credentials to any service.
  const writer=new zip.ZipWriter(new zip.Uint8ArrayWriter(),{level:0,zip64:false,useWebWorkers:false,useCompressionStream:false,password:password||undefined,encryptionStrength:3,zipCrypto:false});
- try{for(const [name,bytes] of [['manifest.json',manifest],['key.json',encodedKey],['image.png',png]])await writer.add(name,new zip.Uint8ArrayReader(bytes));const archive=await writer.close();return writePngBundlePayload(png,archive);}catch(error){await writer.close().catch(()=>{});throw error;}
+ try{for(const [name,bytes] of [['manifest.json',manifest],['key.json',encodedKey],['image.png',png]])await writer.add(name,new zip.Uint8ArrayReader(bytes));return await writer.close();}catch(error){await writer.close().catch(()=>{});throw error;}
 }
+async function createRecoveryPngZip(key,png,password=''){return writePngBundlePayload(png,await createRecoveryZip(key,png,password));}
 function checkPngZipEnvelope(bytes){
  // This format intentionally contains exactly three files, no ZIP64, comments,
  // split disks or prepended/trailing data. Check before allocating entry objects.
@@ -1754,9 +1760,10 @@ function checkPngZipEnvelope(bytes){
  const v=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength),end=bytes.length-22;
  if(v.getUint32(0,true)!==0x04034b50||v.getUint32(end,true)!==0x06054b50||v.getUint16(end+4,true)||v.getUint16(end+6,true)||v.getUint16(end+8,true)!==3||v.getUint16(end+10,true)!==3||v.getUint16(end+20,true)||v.getUint32(end+16,true)+v.getUint32(end+12,true)!==end)throw new Error('图钥文件大小或结构异常');
 }
-async function readRecoveryPngZip(bytes,password=''){
- password=bundlePassword(password);const parsed=inspectRecoveryPng(bytes);if(!parsed.key)throw new Error('图片不含还原密钥，请选择本站下载的图钥一体 PNG');checkPngZipEnvelope(parsed.key);
- const reader=new zip.ZipReader(new zip.Uint8ArrayReader(parsed.key),{useWebWorkers:false,useCompressionStream:false,strictness:'strict',checkAmbiguity:true,checkLocalDirectory:true,checkCrc32:true,checkSignature:true,checkOverlappingEntry:true});
+async function readRecoveryZip(archive,password=''){
+ password=bundlePassword(password);
+ checkPngZipEnvelope(archive);
+ const reader=new zip.ZipReader(new zip.Uint8ArrayReader(archive),{useWebWorkers:false,useCompressionStream:false,strictness:'strict',checkAmbiguity:true,checkLocalDirectory:true,checkCrc32:true,checkSignature:true,checkOverlappingEntry:true});
  try{
   const entries=await reader.getEntries(),limits={'manifest.json':4096,'key.json':1024*1024,'image.png':1024*1024},seen=new Set();let total=0;
   if(entries.length!==3)throw new Error('ZIP 缺少密钥或成品图片');
@@ -1767,16 +1774,27 @@ async function readRecoveryPngZip(bytes,password=''){
   for(const e of entries){try{files[e.filename]=await e.getData(new zip.Uint8ArrayWriter(),{password:encrypted?password:undefined,useWebWorkers:false,useCompressionStream:false,checkCrc32:true,checkSignature:true});}catch(error){if(encrypted&&(error.message===zip.ERR_INVALID_PASSWORD||error.message===zip.ERR_INVALID_SIGNATURE||/password|authentication|signature/i.test(error.message)))throw Object.assign(new Error('密码不正确或文件已损坏，请重试。'),{code:'PASSWORD_INVALID'});throw error;}if(files[e.filename].length!==e.uncompressedSize)throw new Error('ZIP 解压大小超限');}
   const decoder=new TextDecoder('utf-8',{fatal:true}),manifest=JSON.parse(decoder.decode(files['manifest.json']));
   if(manifest.format!=='kobify-png-zip-bundle'||manifest.version!==2||manifest.key!=='key.json'||manifest.image!=='image.png')throw new Error('不支持的 PNG 图钥版本');
-  const key=validateRecoveryKey(JSON.parse(decoder.decode(files['key.json']))),outer=stripPngBundle(bytes),inner=files['image.png'];
-  const canonical=inspectRecoveryPng(inner);if(canonical.width!==key.size||canonical.width===1024||canonical.key||canonical.raw||parsed.width!==1024&&(key.size!==parsed.width||outer.length!==inner.length||!outer.every((v,i)=>v===inner[i])))throw new Error('PNG 与密钥尺寸不符');
+  const key=validateRecoveryKey(JSON.parse(decoder.decode(files['key.json']))),inner=files['image.png'];
+   const canonical=inspectRecoveryPng(inner);
+   if(canonical.width!==key.size||canonical.width===1024||canonical.key||canonical.raw)throw new Error('PNG 与密钥尺寸不符');
   return {key,png:inner,encrypted};
  }finally{await reader.close();}
+}
+async function readRecoveryPngZip(bytes,password=''){
+ const parsed=inspectRecoveryPng(bytes);
+ if(!parsed.key)throw new Error('图片不含还原密钥，请选择本站下载的图钥一体 PNG');
+ const result=await readRecoveryZip(parsed.key,password);
+ if(parsed.width!==1024){
+   const outer=stripPngBundle(bytes);
+   if(parsed.width!==result.key.size||outer.length!==result.png.length||!outer.every((value,i)=>value===result.png[i]))throw new Error('PNG 与密钥尺寸不符');
+ }
+ return result;
 }
 function canonicalPngBytes(bytes){const p=inspectRecoveryPng(bytes);if(!p.raw)return bytes;const raw=inspectRecoveryPng(p.raw);if(raw.width===1024||raw.key||raw.raw)throw new Error('内嵌像素图异常');return p.raw;}
 function createHdImagePng(hd,canonical){const a=inspectRecoveryPng(hd),b=inspectRecoveryPng(canonical);if(a.width!==1024||b.width===1024||b.key||b.raw)throw new Error('导出的图片结构异常');return writePngBundlePayload(hd,canonical,'koBi');}
 async function createHdBundlePng(key,canonical,hd,password=''){if(inspectRecoveryPng(hd).width!==1024)throw new Error('导出的图片尺寸异常');const low=await createRecoveryPngZip(key,canonical,password);return writePngBundlePayload(hd,inspectRecoveryPng(low).key);}
 async function readRecoveryBundle(bytes,password=''){
- if(bytes[0]!==137)return readRecoveryPdf(bytes);
+ if(bytes[0]!==137)return readRecoveryPdf(bytes,password);
  const p=inspectRecoveryPng(bytes);return p.key?.[0]===80&&p.key?.[1]===75?readRecoveryPngZip(bytes,password):readRecoveryPng(bytes);
 }
 </script>
@@ -2110,10 +2128,12 @@ async function recoveryExport(keyOnly,password='',canSave=()=>true){
     const resultSha256=await pixelDigest(result),originalSha256=await pixelDigest(pixels);
     const name='kobify-'+resultSha256.slice(0,12);
     const key={format:'kobify-pixel-key',version:1,size:n,order:'row-major, top-left origin',destinationToSource:map,resultSha256,originalSha256,scope:'Cropped/resampled input pixels; not the full-resolution upload',imageFile:name+'-1024.png'};
-    if(keyOnly==='png-bundle'){
+    if(keyOnly==='pdf-bundle'){
       const png=await canvasPngBytes(pixelCanvas(result,n));
-      const hd=await hdCanvas(result,n);const packed=await createHdBundlePng(key,png,await canvasPngBytes(hd),password);if(!canSave())return false;
-      saveBlob(new Blob([packed],{type:'image/png'}),name+'-image-key.png');
+      const preview=await canvasPngBytes(await hdCanvas(result,n));
+      const packed=await createRecoveryPdf(key,png,preview,password);
+      if(!canSave())return false;
+      saveBlob(new Blob([packed],{type:'application/pdf'}),name+'-image-key.pdf');
     }else if(keyOnly){
       saveBlob(new Blob([JSON.stringify(key)],{type:'application/json'}),name+'-key.json');
     }else{const low=await canvasPngBytes(pixelCanvas(result,n)),hd=await hdCanvas(result,n);const packed=createHdImagePng(await canvasPngBytes(hd),low);saveBlob(new Blob([packed],{type:'image/png'}),name+'-1024.png');}
@@ -2158,8 +2178,8 @@ bundleDialog.addEventListener('close',()=>{exportBundleJob++;$('bundle-password'
 $('bundle-export-form').addEventListener('submit',async event=>{
  event.preventDefault();if(!ready||exportingPdf)return;let password=$('bundle-password').value;
  try{bundlePassword(password);}catch(error){$('bundle-password-status').textContent=error.message;return;}
- const token=++exportBundleJob;exportingPdf=true;$('download-pdf').disabled=true;$('bundle-password-submit').disabled=true;$('bundle-password').disabled=true;$('bundle-password-status').textContent='正在打包 PNG…';
- try{const ok=await recoveryExport('png-bundle',password,()=>token===exportBundleJob&&bundleDialog.open);if(ok&&token===exportBundleJob)bundleDialog.close();else if(token===exportBundleJob)$('bundle-password-status').textContent='图钥打包失败，请重试。';}
+ const token=++exportBundleJob;exportingPdf=true;$('download-pdf').disabled=true;$('bundle-password-submit').disabled=true;$('bundle-password').disabled=true;$('bundle-password-status').textContent='正在生成 PDF…';
+ try{const ok=await recoveryExport('pdf-bundle',password,()=>token===exportBundleJob&&bundleDialog.open);if(ok&&token===exportBundleJob)bundleDialog.close();else if(token===exportBundleJob)$('bundle-password-status').textContent='图钥打包失败，请重试。';}
  finally{password='';exportingPdf=false;$('download-pdf').disabled=!ready;$('bundle-password-submit').disabled=false;$('bundle-password').disabled=false;}
 });
 let restoredCanvas=null,restoredCanonical=null,restoreJob=0,restoreWorker=null,pendingLockedFile=null;
@@ -2211,7 +2231,7 @@ function extractInWorker(bytes,password=''){
     const url=URL.createObjectURL(new Blob([scripts,'\n',handler],{type:'text/javascript'}));let worker;
     try{worker=new Worker(url);}catch(error){URL.revokeObjectURL(url);reject(error);return;}URL.revokeObjectURL(url);restoreWorker=worker;
     const finish=()=>{clearTimeout(timer);worker.terminate();if(restoreWorker===worker)restoreWorker=null;};
-    const timer=setTimeout(()=>{finish();reject(new Error('图钥解析超时，请使用本站生成的 PNG 或旧版 PDF'));},12000);
+    const timer=setTimeout(()=>{finish();reject(new Error('图钥解析超时，请使用本站生成的 PDF 或 PNG'));},12000);
     worker.onerror=()=>{finish();reject(new Error('无法解析此图钥文件，请重新选择'));};
     worker.onmessage=({data})=>{finish();if(data.ok)resolve(data);else reject(Object.assign(new Error(data.error),{code:data.code}));};
     worker.postMessage({bytes:bytes.buffer,password},[bytes.buffer]);
@@ -2229,7 +2249,7 @@ async function restorePdf(file,password=''){
 $('restore-password-form').addEventListener('submit',event=>{event.preventDefault();if(pendingLockedFile)restorePdf(pendingLockedFile,$('restore-password').value);});
 $('restore-password-cancel').addEventListener('click',()=>{resetRestoreResult();$('restore-status').textContent='已取消解锁。';});
 function acceptRestoreFile(id,file){
-  if(!file)return;restoreFiles[id]=file;$(id+'-name').textContent=file.name;
+  if(!file)return;restoreFiles[id]=file;const label=$(id+'-name');label.textContent=file.name;label.hidden=false;
   document.querySelector(`.restore-card[data-input="${id}"]`).classList.add('selected');
   if(id==='restore-pdf')restorePdf(file);else resetRestoreResult();
 }
@@ -2242,7 +2262,7 @@ document.querySelectorAll('.restore-card').forEach(card=>{
 });
 $('restore-run').addEventListener('click',restoreSeparate);
 $('restore-download').addEventListener('click',async()=>{if(!restoredCanvas||!restoredCanonical)return;if(restoredCanvas.width!==1024){saveBlob(new Blob([await canvasPngBytes(restoredCanonical)],{type:'image/png'}),'kobify-restored-pixels.png');return;}const png=createHdImagePng(await canvasPngBytes(restoredCanvas),await canvasPngBytes(restoredCanonical));saveBlob(new Blob([png],{type:'image/png'}),'kobify-restored-1024.png');});
-$('restore-dialog').addEventListener('close',()=>{restoreJob++;clearRestorePassword();if(restoreWorker){restoreWorker.terminate();restoreWorker=null;}restoreBusy(false);});
+$('restore-dialog').addEventListener('close',()=>{restoreJob++;$('restore-more').open=false;clearRestorePassword();if(restoreWorker){restoreWorker.terminate();restoreWorker=null;}restoreBusy(false);});
 </script>
 <script id="feedback-source">// Only feedback fields are sent. Images, pixel maps and recovery keys stay local.
 const feedbackEndpoint='https://kobify-feedback.17610378449w.workers.dev/feedback';

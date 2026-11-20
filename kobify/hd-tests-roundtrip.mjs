@@ -7,7 +7,7 @@ const html=readFileSync(new URL('./index.html',import.meta.url),'utf8');
 const extract=id=>html.match(new RegExp('<script[^>]*id="'+id+'"[^>]*>([\\s\\S]*?)</script>'))[1];
 const ctx=vm.createContext({console,Uint8Array,Uint8ClampedArray,ArrayBuffer,DataView,Int32Array,Uint32Array,Uint16Array,Int16Array,Int8Array,Float32Array,Float64Array,Date,TextEncoder,TextDecoder,crypto:webcrypto,setTimeout,clearTimeout,Blob,Response,URL,ReadableStream,WritableStream,TransformStream,CompressionStream,DecompressionStream,structuredClone,btoa,atob});
 for(const id of ['pdf-library','zip-library','zip-aes-library','recovery-source','bundle-source'])vm.runInContext(extract(id),ctx);
-vm.runInContext('this.bundle={createRecoveryPngZip,readRecoveryBundle,createRecoveryPng,inspectRecoveryPng,stripPngBundle,writePngBundlePayload,permutePixels,pixelDigest,createHdImagePng,createHdBundlePng,canonicalPngBytes};',ctx);
+vm.runInContext('this.bundle={createRecoveryPdf,createRecoveryPngZip,readRecoveryBundle,createRecoveryPng,inspectRecoveryPng,stripPngBundle,writePngBundlePayload,permutePixels,pixelDigest,createHdImagePng,createHdBundlePng,canonicalPngBytes};',ctx);
 function crc32(data){let crc=-1;for(const byte of data){crc^=byte;for(let k=0;k<8;k++)crc=crc>>>1^((crc&1)?0xedb88320:0);}return (crc^-1)>>>0;}
 function chunk(type,data){const name=Buffer.from(type),body=Buffer.concat([name,data]),length=Buffer.alloc(4),crc=Buffer.alloc(4);length.writeUInt32BE(data.length);crc.writeUInt32BE(crc32(body));return Buffer.concat([length,body,crc]);}
 function png(pixels,n){const head=Buffer.alloc(13);head.writeUInt32BE(n);head.writeUInt32BE(n,4);head[8]=8;head[9]=6;const rows=Buffer.alloc(n*(n*4+1));for(let y=0;y<n;y++)Buffer.from(pixels.buffer,pixels.byteOffset+y*n*4,n*4).copy(rows,y*(n*4+1)+1);return new Uint8Array(Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),chunk('IHDR',head),chunk('IDAT',deflateSync(rows)),chunk('IEND',Buffer.alloc(0))]));}
@@ -17,3 +17,26 @@ for(const n of [64,96,128,192,256]){const original=Uint8ClampedArray.from({lengt
 const raw=ctx.bundle.createHdImagePng(hd,low);assert.equal(ctx.bundle.inspectRecoveryPng(raw).width,1024);assert.deepEqual(Array.from(ctx.bundle.canonicalPngBytes(raw)),Array.from(low));
 for(const password of ['', 'hd-test-密钥']){const packed=await ctx.bundle.createHdBundlePng(key,low,hd,password);assert.equal(ctx.bundle.inspectRecoveryPng(packed).width,1024);if(password){await assert.rejects(()=>ctx.bundle.readRecoveryBundle(packed),e=>e.code==='PASSWORD_REQUIRED');await assert.rejects(()=>ctx.bundle.readRecoveryBundle(packed,'bad'),e=>e.code==='PASSWORD_INVALID');}const read=await ctx.bundle.readRecoveryBundle(packed,password);assert.deepEqual(Array.from(read.png),Array.from(low));assert.equal(await ctx.bundle.pixelDigest(ctx.bundle.permutePixels(result,read.key.destinationToSource,true)),key.originalSha256);tested++;}}
 console.log('PASS: HD 1024 containers, embedded exact PNG, encrypted/unencrypted ZIP and lossless recovery at five resolutions ('+tested+' bundles).');
+
+const size=64;
+const original=Uint8ClampedArray.from({length:size*size*4},(_,i)=>i%4===3?255:i%256);
+const mapping=Array.from({length:size*size},(_,i)=>size*size-1-i);
+const result=ctx.bundle.permutePixels(original,mapping);
+const canonical=png(result,size);
+const pdfKey={
+  format:'kobify-pixel-key',version:1,size,destinationToSource:mapping,
+  resultSha256:await ctx.bundle.pixelDigest(result),
+  originalSha256:await ctx.bundle.pixelDigest(original)
+};
+for(const password of ['', 'pdf-test-密钥']){
+  const pdf=await ctx.bundle.createRecoveryPdf(pdfKey,canonical,hd,password);
+  assert.equal(new TextDecoder().decode(pdf.subarray(0,5)),'%PDF-');
+  if(password){
+    await assert.rejects(()=>ctx.bundle.readRecoveryBundle(pdf),error=>error.code==='PASSWORD_REQUIRED');
+    await assert.rejects(()=>ctx.bundle.readRecoveryBundle(pdf,'wrong'),error=>error.code==='PASSWORD_INVALID');
+  }
+  const decoded=await ctx.bundle.readRecoveryBundle(pdf,password);
+  assert.deepEqual(Array.from(decoded.png),Array.from(canonical));
+  assert.equal(await ctx.bundle.pixelDigest(ctx.bundle.permutePixels(result,decoded.key.destinationToSource,true)),pdfKey.originalSha256);
+}
+console.log('PASS: current PDF export with and without a password, rejection of wrong passwords, and exact recovery.');
