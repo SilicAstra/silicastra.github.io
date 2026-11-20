@@ -84,7 +84,7 @@ body[data-view=result]{background:#131710}body[data-view=result] .backdrop,body[
   display:flex;align-items:baseline;gap:.32em;width:fit-content;max-width:100%;
   margin:0 0 18px;
   font-family:Georgia,"Songti SC","Noto Serif CJK SC",SimSun,serif;
-  font-size:clamp(24px,2.65vw,39px);font-weight:700;line-height:1.28;
+  font-size:clamp(24px,2.1vw,30px);font-weight:700;line-height:1.28;
   letter-spacing:.02em;white-space:normal;
 }
 #home-view #title::before{content:"-"}
@@ -100,6 +100,7 @@ body[data-view=result]{background:#131710}body[data-view=result] .backdrop,body[
     -webkit-text-stroke:.65px #e9ffc4;
   }
 }
+@media(max-width:700px){#home-view #title{font-size:clamp(16px,5.8vw,25px)}}
 #home-view[data-target="thanos"] #title{font-size:clamp(18px,1.65vw,26px)}
 @media(max-width:360px){#home-view[data-target="thanos"] #title{font-size:17px}}
 .target-picker{display:grid;grid-template-columns:1fr 52px;gap:8px 12px;margin:16px 0;align-items:center}
