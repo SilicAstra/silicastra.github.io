@@ -329,9 +329,10 @@ PERFORMANCE OF THIS SOFTWARE.
           <option value="kobe">科比</option>
           <option value="frog">奶蛙</option>
           <option value="thanos">灭霸</option>
-          <option value="custom">自定义图片</option><option value="replace-custom" hidden>更换目标图片…</option>
+          <option value="custom">自定义图片</option>
         </select>
         <img id="target-picker-thumb" alt="" hidden>
+        <button id="custom-target-upload" type="button" hidden>上传目标图片 ↗</button>
         <input id="custom-target-file" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" hidden>
       </div>
       <div class="strength-heading"><label for="strength">像素精度（推荐高 · 128）</label><output id="level-output">高 <span>· 128 × 128</span></output></div>
@@ -2073,7 +2074,8 @@ function invalidate(){cancelCompute();stageOriginal();status(inputStatus());}
 function syncTargetPicker(select){
   const choice=$('home-view').dataset.target||'kobe';
   select.value=choice;
-  select.querySelector('[value="replace-custom"]').hidden=choice!=='custom';
+  const replace=select.querySelector('[value="replace-custom"]');
+  if(replace)replace.hidden=choice!=='custom';
 }
 function handleTargetChoice(select){
   const choice=select.value;
@@ -2090,6 +2092,7 @@ function updateTargetControls(){
   $('target-picker-thumb').hidden=!targetImage;
   if(targetImage)$('target-picker-thumb').src=targetImage.src;
   $('demo').disabled=!targetImage;
+  $('custom-target-upload').hidden=$('target-choice').value!=='custom';
   toggleBusy(Boolean(worker));
   document.dispatchEvent(new Event('kobify-target-change'));
 }
@@ -2239,7 +2242,8 @@ for(const name of ['dragenter','dragover'])$('upload').addEventListener(name,eve
 $('upload').addEventListener('dragleave',event=>{if(!$('upload').contains(event.relatedTarget))$('upload').classList.remove('dragging');});
 $('upload').addEventListener('drop',event=>{event.preventDefault();$('upload').classList.remove('dragging');acceptFile(event.dataTransfer.files[0]);});
 window.addEventListener('dragover',event=>event.preventDefault());window.addEventListener('drop',event=>event.preventDefault());
-$('target-choice').addEventListener('change',event=>handleTargetChoice(event.target));
+$('target-choice').addEventListener('change',selectTarget);
+$('custom-target-upload').addEventListener('click',()=>$('custom-target-file').click());
 $('custom-target-file').addEventListener('change',()=>{
   acceptTargetFile($('custom-target-file').files[0]);
   $('custom-target-file').value='';
