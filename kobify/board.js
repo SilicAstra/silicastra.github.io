@@ -14,7 +14,7 @@
   const initial=Uint32Array.from({length:grid*grid},(_,i)=>i);
   let liveRenderer,matcher,active=false,busy=false,queued=false,refine=false;
   let target,colors,mapping=initial,positions,goals,raf=0,timer=0,lastFrame=0;
-  let colorsDirty=true,backgroundCanvas=null,backgroundRequest=0,backgroundPending=false,pointer=null,lastPoint=null,usingDrawing=false;
+  let colorsDirty=true,backgroundMode="white",backgroundCanvas=null,backgroundRequest=0,backgroundPending=false,pointer=null,lastPoint=null,usingDrawing=false;
 
   function message(text,error=false){
     boardStatus.textContent=text;
@@ -22,9 +22,9 @@
   }
 
   function composite(){
-    paper.fillStyle=backgroundChoice.value==='black'?'#000':'#fff';
+    paper.fillStyle=backgroundMode==='black'?'#000':'#fff';
     paper.fillRect(0,0,input.width,input.height);
-    if(backgroundChoice.value==='image'&&backgroundCanvas)paper.drawImage(backgroundCanvas,0,0);
+    if(backgroundMode==='image'&&backgroundCanvas)paper.drawImage(backgroundCanvas,0,0);
     paper.drawImage(strokes,0,0);
   }
 
@@ -56,8 +56,7 @@
   }
 
   function syncTarget(){
-    targetSelect.value=$('target-choice').value;
-    $('board-target-upload').hidden=targetSelect.value!=='custom';
+    syncTargetPicker(targetSelect);
     $('board-use').disabled=!targetImage||usingDrawing;
     if(!active)return;
     clearTimeout(timer);
@@ -195,15 +194,24 @@
     ink.clearRect(0,0,strokes.width,strokes.height);
     updateDrawing(true);
   });
+  function syncBackgroundChoice(){
+    backgroundChoice.value=backgroundMode;
+    backgroundChoice.querySelector('[value="replace-image"]').hidden=backgroundMode!=='image';
+  }
+
   backgroundChoice.addEventListener('change',()=>{
+    const choice=backgroundChoice.value;
+    if(choice==='image'||choice==='replace-image'){
+      syncBackgroundChoice();
+      $('board-background-file').click();
+      return;
+    }
     backgroundRequest++;
     backgroundPending=false;
-    const imageMode=backgroundChoice.value==='image';
-    $('board-background-upload').hidden=!imageMode;
-    if(imageMode&&!backgroundCanvas)message('请选择一张背景图片。');
+    backgroundMode=choice;
+    syncBackgroundChoice();
     updateDrawing(true);
   });
-  $('board-background-upload').addEventListener('click',()=>$('board-background-file').click());
   $('board-background-file').addEventListener('change',async event=>{
     const file=event.target.files[0];
     event.target.value='';
@@ -218,6 +226,8 @@
       if(generation!==backgroundRequest)return;
       if(image.naturalWidth*image.naturalHeight>64000000)throw new Error('图片尺寸过大，请缩小到 6400 万像素以内。');
       backgroundCanvas=pixelCanvas(sample(image,input.width),input.width);
+      backgroundMode='image';
+      syncBackgroundChoice();
       message('背景图片已就绪。');
       updateDrawing(true);
     }catch(error){
@@ -228,11 +238,7 @@
     }
   });
 
-  targetSelect.addEventListener('change',()=>{
-    $('target-choice').value=targetSelect.value;
-    selectTarget();
-  });
-  $('board-target-upload').addEventListener('click',()=>$('custom-target-file').click());
+  targetSelect.addEventListener('change',()=>handleTargetChoice(targetSelect));
   $('board-use').addEventListener('click',async()=>{
     if(!targetImage||usingDrawing)return;
     if(backgroundPending){message('请等待背景图片载入。');return;}
