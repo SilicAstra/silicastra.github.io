@@ -119,6 +119,36 @@ body[data-view=result]{background:#131710}body[data-view=result] .backdrop,body[
 #restore-dialog > .unified{width:100%;min-height:126px;margin:16px 0 6px}
 #restore-dialog > .unified [hidden]{display:none}
 .restore-more .restore-pair{margin-top:4px}
+
+.control-panel > #open-board{width:100%;margin-top:10px;min-height:40px;border-radius:9px}
+body[data-view="draw"]{background:#131810}
+body[data-view="draw"] :is(.backdrop,.shade){display:none}
+#board-view{display:block;width:min(1060px,100%);margin:auto;padding:28px clamp(16px,4vw,40px) 46px}
+#board-view[hidden]{display:none}
+#board-title{margin:12px 0 20px;font-size:clamp(30px,5vw,52px);letter-spacing:-.035em}
+#board-title:focus{outline:none}
+.board-controls{display:flex;flex-wrap:wrap;align-items:end;gap:12px 18px;margin-bottom:15px}
+.board-controls label{display:grid;gap:4px;font-size:12px;color:#dbe7ca}
+.board-controls :is(button,select),#board-use{min-height:38px;border:1px solid #829759;border-radius:8px;padding:6px 10px;background:#283322;color:#ecf4df;font:inherit}
+.board-controls button,#board-use{cursor:pointer}
+#board-use{font-size:13px;background:#dfff85;color:#26391a;border-color:#dfff85;font-weight:800}
+.board-tools{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;margin:0 0 14px}
+.board-palette{display:flex;flex-wrap:wrap;gap:7px;min-width:0;margin:0;padding:0;border:0}
+.board-swatch{position:relative;display:block;width:29px;height:29px}
+.board-swatch input{position:absolute;inset:0;margin:0;opacity:0;cursor:pointer}
+.board-swatch span{display:block;height:100%;border:1px solid #fff6;border-radius:50%;background:var(--ink);pointer-events:none}
+.board-swatch input:is(:checked,:focus-visible)+span{outline:2px solid #dfff85;outline-offset:2px}
+.board-width{display:flex;align-items:center;gap:8px;font-size:12px;color:#dbe7ca}
+.board-width input{width:85px;accent-color:#dfff85}
+.board-panes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.board-panes figure{margin:0;min-width:0}
+.board-panes figcaption{margin-bottom:7px;font-size:12px;color:#dbe7ca}
+.board-panes canvas,.board-preview{display:block;width:100%;aspect-ratio:1;border-radius:10px;overflow:hidden;background:#20291a}
+#board-input{touch-action:none;cursor:crosshair}
+#board-output[hidden]{display:none}
+.board-bottom{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:14px}
+#board-status{min-height:0;margin:0}
+@media(max-width:530px){.board-panes{gap:8px}.board-controls{gap:9px 12px}.board-controls label{max-width:100%}.board-bottom{align-items:start}}
 </style><!--
 Third-party notices for bundled PDF/ZIP libraries
 
@@ -311,6 +341,7 @@ PERFORMANCE OF THIS SOFTWARE.
       <button id="generate" class="primary" disabled>点击复活科比 <span>↗</span></button>
       <p id="status" class="status" role="status">正在载入科比照片…</p>
       <button class="restore-open" type="button">已有密钥？还原图片 ↗</button>
+      <button id="open-board" class="restore-open" type="button">打开画板 ↗</button>
       <details class="advanced"><summary>更多设置</summary><label for="crop">画面适配</label><select id="crop"><option value="cover">居中裁剪 · 填满画面</option><option value="contain">保留全图 · 白色留边</option></select><label for="structure">保留原图结构 <output id="structure-value">15%</output></label><input id="structure" type="range" min="0" max="100" value="15"></details>
       <div class="panel-footer"><span class="tiny-dot"></span><span>档位越高，像素越细，细节越丰富</span></div>
     </div>
@@ -341,6 +372,43 @@ PERFORMANCE OF THIS SOFTWARE.
     <div class="color-control"><div><label for="color-blend">目标配色</label><output id="blend-value">0%</output><span id="blend-note">保持原图颜色</span></div><input id="color-blend" type="range" min="0" max="100" value="0" disabled><p>原图颜色不足时，可提高此项，混合目标图片的颜色，使预览更接近目标。</p></div>
   </section>
 </main>
+<main id="board-view" hidden aria-labelledby="board-title">
+  <button class="back-button" id="board-back" type="button">← 返回首页</button>
+  <h1 id="board-title" tabindex="-1">像素画板</h1>
+  <div class="board-controls">
+    <label>重排目标
+      <select id="board-target"><option value="kobe">科比</option><option value="frog">奶蛙</option><option value="thanos">灭霸</option><option value="custom">自定义图片</option></select>
+    </label>
+    <button id="board-target-upload" type="button" hidden>上传目标图片 ↗</button>
+    <label>画板背景
+      <select id="board-background"><option value="white">纯白</option><option value="black">纯黑</option><option value="image">使用图片</option></select>
+    </label>
+    <button id="board-background-upload" type="button" hidden>上传背景图片</button>
+    <input id="board-background-file" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" hidden>
+    <button id="board-clear" type="button">清除笔迹</button>
+  </div>
+  <div class="board-tools">
+    <fieldset class="board-palette"><legend class="sr-only">画笔颜色</legend>
+      <label class="board-swatch" style="--ink:#000000"><input type="radio" name="board-ink" value="#000000" aria-label="黑色" checked><span></span></label>
+      <label class="board-swatch" style="--ink:#e12a35"><input type="radio" name="board-ink" value="#e12a35" aria-label="红色"><span></span></label>
+      <label class="board-swatch" style="--ink:#ff8c22"><input type="radio" name="board-ink" value="#ff8c22" aria-label="橙色"><span></span></label>
+      <label class="board-swatch" style="--ink:#ffe034"><input type="radio" name="board-ink" value="#ffe034" aria-label="黄色"><span></span></label>
+      <label class="board-swatch" style="--ink:#46bd54"><input type="radio" name="board-ink" value="#46bd54" aria-label="绿色"><span></span></label>
+      <label class="board-swatch" style="--ink:#3573ef"><input type="radio" name="board-ink" value="#3573ef" aria-label="蓝色"><span></span></label>
+      <label class="board-swatch" style="--ink:#9954d8"><input type="radio" name="board-ink" value="#9954d8" aria-label="紫色"><span></span></label>
+      <label class="board-swatch" style="--ink:#ffffff"><input type="radio" name="board-ink" value="#ffffff" aria-label="白色"><span></span></label>
+    </fieldset>
+    <label class="board-width">笔刷大小 <input id="board-brush" type="range" min="4" max="64" value="24"></label>
+  </div>
+  <div class="board-panes">
+    <figure><figcaption>在这里画</figcaption><canvas id="board-input" width="512" height="512" aria-label="绘画画布"></canvas></figure>
+    <figure><figcaption>实时重排</figcaption><div class="board-preview"><canvas id="board-output" width="384" height="384" role="img" aria-label="实时重排预览"></canvas></div></figure>
+  </div>
+  <div class="board-bottom">
+    <p id="board-status" class="status" role="status"></p>
+    <button id="board-use" type="button" disabled>用这张画生成 ↗</button>
+  </div>
+</main>
 <footer class="page-footer"><span>SiliC AstrA — MAMBA MENTALITY.</span><span><button class="feedback-open" type="button">向作者反馈 ↗</button> <span class="divider">/</span> <a href="https://github.com/SilicAstra/silicastra.github.io/tree/main/kobify" target="_blank" rel="noopener">GitHub ↗</a> <span class="divider">/</span> <a href="https://github.com/Spu7Nix/obamify" target="_blank" rel="noopener">Obamify</a> · <a href="./LICENSE">MIT</a><span class="footer-star">✳</span></span></footer>
 <dialog id="bundle-export-dialog" aria-labelledby="bundle-export-title"><form id="bundle-export-form"><p class="restore-eyebrow">BLACK MAMBA / PASSWORD</p><h2 id="bundle-export-title">设置密码</h2><p>密码选填，留空则不设置密码。</p><label for="bundle-password">密码（选填）</label><input id="bundle-password" type="password" maxlength="256" autocomplete="new-password" placeholder="留空则无密码"><label class="password-show"><input id="bundle-password-show" type="checkbox">显示密码</label><p id="bundle-password-status" role="status" aria-live="polite"></p><div class="password-actions"><button id="bundle-password-cancel" type="button">取消</button><button id="bundle-password-submit" type="submit">下载 PDF</button></div><small>密码不会上传或保存，忘记后无法找回。</small></form></dialog>
 <dialog id="restore-dialog" aria-labelledby="restore-title"><form method="dialog"><button class="restore-close" aria-label="关闭还原窗口">✕</button></form><h2 id="restore-title">MANBA OUT</h2>
@@ -358,6 +426,38 @@ PERFORMANCE OF THIS SOFTWARE.
  * uploaded filenames, executable source, or the third-party feedback iframe. */
 const I18n=(()=>{
  const dictionary={
+  "打开画板 ↗": ["Open drawing board ↗", "お絵描きボードを開く ↗"],
+  "← 返回首页": ["← Back to home", "← ホームに戻る"],
+  "像素画板": ["Pixel drawing board", "ピクセルお絵描きボード"],
+  "画板背景": ["Canvas background", "キャンバスの背景"],
+  "纯白": ["White", "白"],
+  "纯黑": ["Black", "黒"],
+  "使用图片": ["Use an image", "画像を使う"],
+  "上传背景图片": ["Upload background", "背景画像を追加"],
+  "清除笔迹": ["Clear strokes", "線を消去"],
+  "画笔颜色": ["Brush color", "ブラシの色"],
+  "笔刷大小": ["Brush size", "ブラシの太さ"],
+  "在这里画": ["Draw here", "ここに描く"],
+  "绘画画布": ["Drawing canvas", "お絵描きキャンバス"],
+  "实时重排": ["Live rearrangement", "リアルタイム並べ替え"],
+  "实时重排预览": ["Live rearrangement preview", "リアルタイム並べ替えプレビュー"],
+  "用这张画生成 ↗": ["Generate from drawing ↗", "この絵から生成 ↗"],
+  "画笔颜色会决定成品配色。": ["Your brush colors shape the result.", "ブラシの色が完成画像の配色になります。"],
+  "实时重排暂不可用，请重新打开画板。": ["Live rearrangement is unavailable. Reopen the board.", "リアルタイム並べ替えが利用できません。ボードを開き直してください。"],
+  "请选择一张背景图片。": ["Choose a background image.", "背景画像を選んでください。"],
+  "背景图片已就绪。": ["Background image ready.", "背景画像の準備ができました。"],
+  "请等待背景图片载入。": ["Wait for the background image to load.", "背景画像の読み込みをお待ちください。"],
+  "画板作品": ["Board drawing", "お絵描き作品"],
+  "画板作品无法读取，请重试。": ["Could not read the drawing. Please retry.", "作品を読み込めません。もう一度お試しください。"],
+  "黑色": ["Black", "黒"],
+  "红色": ["Red", "赤"],
+  "橙色": ["Orange", "オレンジ"],
+  "黄色": ["Yellow", "黄"],
+  "绿色": ["Green", "緑"],
+  "蓝色": ["Blue", "青"],
+  "紫色": ["Purple", "紫"],
+  "白色": ["White", "白"],
+
   "重排结果": ["Rearrangement result", "並べ替え結果"],
   "分享可还原图片时，请发送下载的原文件。截图或压缩图无法用于还原。": ["To share a restorable image, send the original downloaded file. Screenshots and compressed copies cannot be restored.", "復元できる画像を共有するには、ダウンロードしたファイルをそのまま送ってください。スクリーンショットや圧縮された画像からは復元できません。"],
   "更多": ["More", "その他"],
@@ -1401,11 +1501,18 @@ class PixelMatcher {
 self.onmessage=({data})=>{
   try{
     const matcher=new PixelMatcher(data.source,data.target,data.n,data.proximity);
-    const passes=150;let swaps=0;
+    if(data.live&&data.previousMapping?.length===matcher.count){
+      matcher.map.set(data.previousMapping);
+      for(let dst=0;dst<matcher.count;dst++)matcher.scores[dst]=matcher.cost(matcher.map[dst],dst);
+      matcher.initialCost=matcher.totalCost();
+    }
+    const passes=data.live?(data.refine?26:9):150;
+    const attempts=data.live?(data.refine?12:7):32;
+    let swaps=0;
     for(let generation=0;generation<passes;generation++){
       const radius=Math.max(1,Math.round(data.n*Math.pow(1/data.n,generation/(passes-1))));
-      swaps+=matcher.pass(radius);
-      if(generation%3===0)self.postMessage({type:'progress',value:(generation+1)/passes});
+      swaps+=matcher.pass(radius,attempts);
+      if(!data.live&&generation%3===0)self.postMessage({type:'progress',value:(generation+1)/passes});
     }
     const result={type:'done',mapping:matcher.map,initialCost:matcher.initialCost,
       finalCost:matcher.totalCost(),swaps};
@@ -1871,18 +1978,28 @@ let playDirection=1;
 let sourceObjectURL=null,currentSourceName='',computeStart=0;
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const sampleCanvas=document.createElement('canvas'),sampleCtx=sampleCanvas.getContext('2d',{willReadFrequently:true});
-function status(message,error=false){for(const id of ['status','result-status']){$(id).textContent=message;$(id).classList.toggle('error',error);}}
-function showView(result){
-  $('home-view').hidden=result;$('result-view').hidden=!result;document.body.dataset.view=result?'result':'home';
+function status(message,error=false){for(const id of ['status','result-status']){$(id).textContent=message;$(id).classList.toggle('error',error);}if(error&&document.body.dataset.view==='draw'){$('board-status').textContent=message;$('board-status').classList.add('error');}}
+function showView(result,drawing=false){
+  $('home-view').hidden=result||drawing;
+  $('result-view').hidden=!result;
+  $('board-view').hidden=!drawing;
+  document.body.dataset.view=result?'result':drawing?'draw':'home';
   document.title=result?'See You Again · SiliC AstrA':'SiliC AstrA';
-  window.scrollTo(0,0);$(result?'result-view':'title').focus({preventScroll:true});
+  window.scrollTo(0,0);
+  $(result?'result-view':drawing?'board-title':'title').focus({preventScroll:true});
+  document.dispatchEvent(new Event('kobify-view-change'));
 }
 function syncRoute(){
   if(location.hash==='#result'&&(worker||ready)){showView(true);if(ready)draw();return;}
-  if(worker)cancelCompute(true);stopAnimation();showView(false);
+  if(worker)cancelCompute(true);
+  stopAnimation();
+  if(location.hash==='#draw'){showView(false,true);return;}
+  showView(false);
   if(location.hash==='#result'){history.replaceState(null,'',location.pathname+location.search);status('请先上传图片，选择档位后点击「复活科比」。');}
 }
 function goHome(){location.hash='';}
+$('open-board').addEventListener('click',()=>{location.hash='draw';});
+$('board-back').addEventListener('click',goHome);
 function setLevel(value){
   selectedLevel=Math.max(0,Math.min(4,Math.round(Number(value)||0)));
   const level=levels[selectedLevel];$('strength').value=selectedLevel;
@@ -1959,6 +2076,7 @@ function updateTargetControls(){
   if(targetImage)$('target-picker-thumb').src=targetImage.src;
   $('demo').disabled=!targetImage;
   toggleBusy(Boolean(worker));
+  document.dispatchEvent(new Event('kobify-target-change'));
 }
 function updateBackdrop(){
   const choice=$('target-choice').value;
@@ -2345,4 +2463,5 @@ feedbackForm.addEventListener('submit',async event=>{
 });
 </script>
 <!-- Cloudflare Web Analytics --><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"9a64e175e454422d89dfb1d74a535da6"}'></script><!-- End Cloudflare Web Analytics -->
+<script src="./board.js?v=1"></script>
 </body></html>

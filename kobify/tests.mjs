@@ -65,3 +65,23 @@ for(const size of [64,96,128,192,256]){
 assert.throws(()=>new ctx.Matcher(new Uint8ClampedArray(257*257*4),new Uint8ClampedArray(257*257*4),257));
 assert.match(extract('app-source'),/setLevel\(2\);syncRoute/);
 console.log('PASS: matcher and simulation support 256x256 with 65536 unique indices; reject 257; default initialization selects high.');
+
+const liveMessages=[];
+ctx.self.postMessage=message=>liveMessages.push(message);
+ctx.self.onmessage({data:{source,target,n,proximity:0,live:true}});
+const firstLive=liveMessages.pop();
+assert.equal(firstLive.type,'done');
+assert.equal(liveMessages.length,0);
+assert.equal(new Set(firstLive.mapping).size,count);
+assert.ok(firstLive.finalCost<firstLive.initialCost);
+const repainted=source.slice();
+repainted.set([255,0,0,255],0);
+const expected=new ctx.Matcher(repainted,target,n,0);
+const initialLiveCost=firstLive.mapping.reduce((cost,src,dst)=>cost+expected.cost(src,dst),0);
+ctx.self.onmessage({data:{source:repainted,target,n,proximity:0,live:true,refine:true,previousMapping:firstLive.mapping}});
+const refined=liveMessages.pop();
+assert.equal(refined.type,'done');
+assert.equal(refined.initialCost,initialLiveCost);
+assert.equal(new Set(refined.mapping).size,count);
+assert.ok(refined.finalCost<=refined.initialCost);
+console.log('PASS: live drawing updates reuse the prior bijection and reduce matching cost.');
